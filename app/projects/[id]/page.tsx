@@ -1,8 +1,12 @@
 "use client";
 
-import React, { use } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Globe, Github, Lightbulb, GitPullRequest } from "lucide-react";
 import Link from "next/link";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { trackProjectView } from "@/lib/viewTracking";
+import { useUser } from "@clerk/nextjs";
 
 // --- Components ---
 
@@ -39,108 +43,92 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
   </h2>
 );
 
-// --- Data ---
-
-const projects = [
-  {
-    id: "notesbuddy",
-    title: "NotesBuddy",
-    shortDescription:
-      "A Notes Sharing Platform where users can read notes, give quizzes, revise from flashcards, execute code snippets, and also have PYQs, more.",
-    tags: ["Completed", "Next.js", "TypeScript", "React"],
-    extraTagsCount: 9,
-    bannerGradient: "from-pink-500 via-purple-600 to-indigo-600",
-
-    // Stats Bar Data
-    timeline: "2 Months",
-    role: "Full Stack",
-    team: "Solo",
-    status: "Completed",
-
-    // Links
-    githubUrl: "https://github.com/openforge/notesbuddy",
-    liveUrl: "https://notesbuddy-demo.vercel.app",
-
-    // Content
-    overview:
-      "NotesBuddy is a modern notes sharing platform that allows users to read notes, give quizzes, revise from flashcards, and also learn programming with interactive features.",
-
-    features: [
-      {
-        title: "Find Notes",
-        desc: "Search and access notes by year or semester.",
-      },
-      {
-        title: "Share Resources",
-        desc: "Share notes and materials with friends easily.",
-      },
-      {
-        title: "Revise",
-        desc: "Practice with interactive flashcards for active recall.",
-      },
-      {
-        title: "AI Quizzes",
-        desc: "Test your knowledge with AI-active quizzes.",
-      },
-    ],
-
-    motivation: [
-      "Notes and PYQs were scattered everywhere.",
-      "Existing resources were outdated & not organized.",
-      "I wanted to customize my reading experience, not just read PDFs.",
-    ],
-
-    techStack: [
-      "Next.js",
-      "TypeScript",
-      "React",
-      "Tailwind CSS",
-      "Shadcn UI",
-      "Zod",
-      "React Hook Form",
-      "Razorpay SDK",
-      "Monaco Editor",
-      "MDX Integration",
-      "Strapi (In new version)",
-    ],
-
-    impact: [
-      "Got 2000+ users.",
-      "Got 300k views lifetime with average 15k views during exams.",
-      "Got 110+ Premium users in the same duration.",
-      "Learned a lot about SEO, optimization, and how to build a product that is useful for the users.",
-      "Got a lot of feedback from the users, which helped me to improve the platform.",
-      "Finally found a fundamental issue in `velite` that has a memory leak issue, which was causing the platform to be slow.",
-      "Built my own CMS for the platform, which is a custom CMS for the platform.",
-      "Used full potential of MDX and custom components to build the platform.",
-      "Later on migrated to Strapi for better Performance and full text search.",
-    ],
-
-    futurePlans: [
-      "Improve the CMS system.",
-      "Add AI Study Assistant.",
-      "Scale to mobile app.",
-    ],
-  },
-];
-
 export default function ProjectDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const project = projects.find((p) => p.id === id) || projects[0];
+  const { user } = useUser();
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [viewTracked, setViewTracked] = useState(false);
+
+  useEffect(() => {
+    async function loadProject() {
+      try {
+        const docRef = doc(db, "projects", id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setProject({ id: docSnap.id, ...docSnap.data() });
+          
+          // Track view only once per page load
+          if (!viewTracked) {
+            await trackProjectView(id, user?.id);
+            setViewTracked(true);
+          }
+        } else {
+          console.log("No such project!");
+        }
+      } catch (error) {
+        console.error("Error loading project:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProject();
+  }, [id, user, viewTracked]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white font-sans flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Project Not Found</h1>
+          <Link href="/projects" className="text-blue-400 hover:text-blue-300">
+            Back to Projects
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-pink-500/30 pb-32">
       {/* Increased top padding here for more space from navbar */}
       <div className="max-w-5xl mx-auto px-6 pt-32">
         {/* ================= HERO SECTION ================= */}
-        {/* 1. Simple Gradient Banner */}
-        <div
-          className={`w-full h-[320px] rounded-3xl bg-gradient-to-br ${project.bannerGradient} relative overflow-hidden mb-12 border border-white/5`}
-        ></div>
+        {/* 1. Mockup Image or Gradient Banner */}
+        <div className="w-full h-[320px] rounded-3xl relative overflow-hidden mb-12 border border-white/5">
+          {project.mockupImage ? (
+            <img 
+              src={`/mockups/${project.mockupImage}`} 
+              alt={`${project.title} mockup`}
+              className="w-full h-full object-cover rounded-3xl"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.className = `w-full h-[320px] rounded-3xl bg-gradient-to-br ${project.bannerGradient || 'from-pink-500 via-purple-600 to-indigo-600'} relative overflow-hidden mb-12 border border-white/5`;
+                }
+              }}
+            />
+          ) : (
+            <div className={`w-full h-full bg-gradient-to-br ${project.bannerGradient || 'from-pink-500 via-purple-600 to-indigo-600'}`}></div>
+          )}
+        </div>
 
         {/* 2. Project Meta Info (Tags, Title, Stats) */}
         <div className="flex flex-col gap-8 mb-16">
@@ -149,7 +137,7 @@ export default function ProjectDetailPage({
             <span className="px-3 py-1 rounded-full bg-white text-black text-xs font-bold border border-white">
               {project.status}
             </span>
-            {project.tags.slice(1).map((tag, i) => (
+            {project.tags?.slice(1).map((tag: string, i: number) => (
               <span
                 key={i}
                 className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 font-medium"
@@ -175,12 +163,14 @@ export default function ProjectDetailPage({
           </div>
 
           {/* Stats Bar */}
-          <div className="w-full md:w-fit flex items-center bg-zinc-900/30 border border-zinc-800 rounded-xl p-4 overflow-x-auto">
-            <InfoItem label="Timeline" value={project.timeline} />
-            <InfoItem label="Role" value={project.role} />
-            <InfoItem label="Team" value={project.team} />
-            <InfoItem label="Status" value={project.status} isPill />
-          </div>
+          {(project.timeline || project.role || project.team || project.status) && (
+            <div className="w-full md:w-fit flex items-center bg-zinc-900/30 border border-zinc-800 rounded-xl p-4 overflow-x-auto">
+              {project.timeline && <InfoItem label="Timeline" value={project.timeline} />}
+              {project.role && <InfoItem label="Role" value={project.role} />}
+              {project.team && <InfoItem label="Team" value={project.team} />}
+              {project.status && <InfoItem label="Status" value={project.status} isPill />}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -224,127 +214,138 @@ export default function ProjectDetailPage({
         {/* ================= CONTENT BODY ================= */}
         {/* Horizontal Line (border-t) is here */}
         <div className="max-w-4xl mx-auto border-t border-zinc-800 pt-16">
-          {/* --- NEW SECTION ADDED HERE --- */}
-          <div className="mb-16">
-            <h1 className="text-3xl font-bold text-white mb-8">
-              {project.title}: A Notes Sharing Platform
-            </h1>
-
-            <SectionHeading>Overview</SectionHeading>
-            <p className="text-zinc-400 leading-relaxed">
-              NotesBuddy is a modern notes sharing platform that allows users to
-              read notes, give quizzes, revise from flashcards and also have
-              PYQs, more features.
-            </p>
-          </div>
-          {/* ------------------------------- */}
+          {/* Overview Section */}
+          {project.overview && (
+            <div className="mb-16">
+              <SectionHeading>Overview</SectionHeading>
+              <p className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.overview}
+              </p>
+            </div>
+          )}
 
           {/* What Users Can Do */}
-          <div className="mb-16">
-            <SectionHeading>What Users Can Do</SectionHeading>
-            <ul className="list-disc list-inside space-y-3 text-zinc-400">
-              <li>
-                <span className="font-semibold text-white">Find Notes:</span>{" "}
-                Search and access notes by year or semester (1st to 4th year).
-              </li>
-              <li>
-                <span className="font-semibold text-white">
-                  Share Resources:
-                </span>{" "}
-                Share notes and materials with friends.
-              </li>
-              <li>
-                <span className="font-semibold text-white">
-                  Use Flashcards:
-                </span>{" "}
-                Practice with interactive flashcards for active recall.
-              </li>
-              <li>
-                <span className="font-semibold text-white">
-                  Attempt Quizzes:
-                </span>{" "}
-                Test your knowledge with practice quizzes.
-              </li>
-              <li>
-                <span className="font-semibold text-white">Access PYQs:</span>{" "}
-                Get previous year questions (PYQs) with answers.
-              </li>
-              <li>
-                <span className="font-semibold text-white">One-Shots:</span>{" "}
-                Quick review materials for last minute prep.
-              </li>
-              <li>
-                <span className="font-semibold text-white">Topper Notes:</span>{" "}
-                Handwritten notes from top-performing students.
-              </li>
-              <li>
-                <span className="font-semibold text-white">
-                  AI Study Assistant:
-                </span>{" "}
-                (Coming soon) Get instant answers to your study questions.
-              </li>
-              <li>
-                <span className="font-semibold text-white">
-                  Video Material:
-                </span>{" "}
-                Watch video explanations for better understanding.
-              </li>
-            </ul>
-          </div>
+          {project.whatUsersCanDo && (
+            <div className="mb-16">
+              <SectionHeading>What Users Can Do</SectionHeading>
+              <div className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.whatUsersCanDo.split('\n').map((line: string, index: number) => (
+                  <div key={index} className="mb-3">
+                    {line.startsWith('•') || line.startsWith('-') || /^\d+\./.test(line) ? (
+                      <div className="flex items-start">
+                        <span className="mr-2">{line.split(':')[0]}:</span>
+                        <span>{line.split(':').slice(1).join(':')}</span>
+                      </div>
+                    ) : (
+                      <span>{line}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Why I built this */}
-          <div className="mb-16">
-            <SectionHeading>Why I built this</SectionHeading>
-            <p className="text-zinc-400 mb-6">
-              I built this platform to solve a fundamental issue I faced while
-              studying as follows -
-            </p>
-            <ul className="list-disc list-inside space-y-3 text-zinc-400">
-              <li>Professors don't share notes with students.</li>
-              <li>Toppers notes are not available to everyone.</li>
-              <li>Notes are scattered & not organized.</li>
-              <li>
-                Reading one notes and then another notes is a pain with no sync,
-                same example's and tone of writing.
-              </li>
-              <li>
-                I don't want to read notes from a pdf, i want to customize my
-                reading experience.
-              </li>
-            </ul>
-          </div>
+          {project.whyIBuiltThis && (
+            <div className="mb-16">
+              <SectionHeading>Why I built this</SectionHeading>
+              <div className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.whyIBuiltThis.split('\n').map((line: string, index: number) => (
+                  <div key={index} className="mb-2">
+                    {line.startsWith('•') || line.startsWith('-') || /^\d+\./.test(line) ? (
+                      <li className="list-disc ml-6">{line.replace(/^[•\-\d\.]\s*/, '')}</li>
+                    ) : (
+                      <p>{line}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Features */}
+          {project.features && (
+            <div className="mb-16">
+              <SectionHeading>Features</SectionHeading>
+              <div className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.features.split('\n').map((line: string, index: number) => (
+                  <div key={index} className="mb-2">
+                    {line.startsWith('•') || line.startsWith('-') || /^\d+\./.test(line) ? (
+                      <li className="list-disc ml-6">{line.replace(/^[•\-\d\.]\s*/, '')}</li>
+                    ) : (
+                      <p>{line}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Tech Stack */}
-          <div className="mb-16">
-            <SectionHeading>Tech Stack</SectionHeading>
-            <ul className="list-disc list-inside space-y-2 text-zinc-400">
-              {project.techStack.map((tech, i) => (
-                <li key={i}>{tech}</li>
-              ))}
-            </ul>
-          </div>
+          {project.techStack && (
+            <div className="mb-16">
+              <SectionHeading>Tech Stack</SectionHeading>
+              <div className="flex flex-wrap gap-2">
+                {project.techStack.split(',').map((tech: string, i: number) => (
+                  <span key={i} className="px-3 py-1 bg-zinc-900/50 border border-zinc-800 text-zinc-300 text-sm rounded-lg">
+                    {tech.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* After launch & Impact */}
-          {project.impact && project.impact.length > 0 && (
+          {project.impact && (
             <div className="mb-16">
               <SectionHeading>After launch & Impact</SectionHeading>
-              <ul className="list-disc list-inside space-y-3 text-zinc-400">
-                {project.impact.map((item, i) => (
-                  <li key={i}>{item}</li>
+              <div className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.impact.split('\n').map((line: string, index: number) => (
+                  <div key={index} className="mb-2">
+                    {line.startsWith('•') || line.startsWith('-') || /^\d+\./.test(line) ? (
+                      <li className="list-disc ml-6">{line.replace(/^[•\-\d\.]\s*/, '')}</li>
+                    ) : (
+                      <p>{line}</p>
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {/* Future Plans */}
-          {project.futurePlans && project.futurePlans.length > 0 && (
+          {project.futurePlans && (
             <div className="mb-16">
               <SectionHeading>Future Plans</SectionHeading>
-              <ul className="list-disc list-inside space-y-3 text-zinc-400">
-                {project.futurePlans.map((item, i) => (
-                  <li key={i}>{item}</li>
+              <div className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.futurePlans.split('\n').map((line: string, index: number) => (
+                  <div key={index} className="mb-2">
+                    {line.startsWith('•') || line.startsWith('-') || /^\d+\./.test(line) ? (
+                      <li className="list-disc ml-6">{line.replace(/^[•\-\d\.]\s*/, '')}</li>
+                    ) : (
+                      <p>{line}</p>
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Motivation */}
+          {project.motivation && (
+            <div className="mb-16">
+              <SectionHeading>Motivation</SectionHeading>
+              <div className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                {project.motivation.split('\n').map((line: string, index: number) => (
+                  <div key={index} className="mb-2">
+                    {line.startsWith('•') || line.startsWith('-') || /^\d+\./.test(line) ? (
+                      <li className="list-disc ml-6">{line.replace(/^[•\-\d\.]\s*/, '')}</li>
+                    ) : (
+                      <p>{line}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
