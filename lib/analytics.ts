@@ -1,9 +1,9 @@
 "use client";
 
-import { getAnalytics } from "firebase/analytics";
+import { Analytics, getAnalytics } from "firebase/analytics";
 import { app } from "./firebase";
 
-let analytics;
+let analytics: Analytics;  
 
 export function getAnalyticsInstance() {
   if (typeof window !== 'undefined' && !analytics) {
