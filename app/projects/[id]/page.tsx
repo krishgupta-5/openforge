@@ -184,15 +184,21 @@ export default function ProjectDetailPage({
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm font-semibold hover:bg-yellow-500/20 transition-all hover:scale-105 active:scale-95">
+            <Link 
+              href="/feature-ideas"
+              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm font-semibold hover:bg-yellow-500/20 transition-all hover:scale-105 active:scale-95"
+            >
               <Lightbulb className="w-4 h-4" />
               New Feature Idea
-            </button>
+            </Link>
 
-            <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm font-semibold hover:bg-emerald-500/20 transition-all hover:scale-105 active:scale-95">
+            <Link 
+              href="/contribute-form"
+              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm font-semibold hover:bg-emerald-500/20 transition-all hover:scale-105 active:scale-95"
+            >
               <GitPullRequest className="w-4 h-4" />
               Contribute
-            </button>
+            </Link>
 
             <div className="w-px h-8 bg-zinc-800 mx-2 hidden sm:block"></div>
 
