@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Globe, Github, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 // --- Components ---
 
@@ -108,130 +110,34 @@ const StatusPill = ({ status }: { status: string }) => {
 
 export default function ProjectsPage() {
   const [activeTab, setActiveTab] = useState("All");
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const projects = [
-    {
-      id: "notesbuddy",
-      title: "NotesBuddy",
-      description:
-        "An open-source study platform featuring collaborative notes, flashcards, quizzes, and AI-powered study assistants.",
-      gradient: "from-neutral-800 to-neutral-900",
-      status: "Open for Contributions",
-      technologies: ["Next.js", "TypeScript", "React", "Supabase", "Tailwind"],
-      category: "Working",
-      version: "v2.1.0",
-    },
-    {
-      id: "appwrite-mcp",
-      title: "Appwrite MCP Server",
-      description:
-        "Seamless database operations using reusable developer tools. Acts as a bridge between LLMs and your Appwrite backend.",
-      gradient: "from-blue-900/40 to-indigo-900/40",
-      status: "Open for Contributions",
-      technologies: ["TypeScript", "Next.js", "React"],
-      category: "Working",
-      version: "v1.0.4",
-    },
-    {
-      id: "openforge",
-      title: "OpenForge",
-      description:
-        "A community-driven toolchain for automating CI/CD pipelines. Built to simplify complex deployment workflows.",
-      gradient: "from-emerald-900/40 to-teal-900/40",
-      status: "Building",
-      technologies: ["React", "TypeScript", "Docker"],
-      category: "Building",
-      version: "v0.8.0-alpha",
-    },
-    {
-      id: "codecollab",
-      title: "CodeCollab",
-      description:
-        "Real-time collaborative coding platform with live sharing, voice chat, and integrated development environment.",
-      gradient: "from-purple-900/40 to-pink-900/40",
-      status: "Open for Contributions",
-      technologies: ["WebRTC", "React", "Node.js", "WebSocket"],
-      category: "Working",
-      version: "v1.3.2",
-    },
-    {
-      id: "dataviz-pro",
-      title: "DataViz Pro",
-      description:
-        "Advanced data visualization library with interactive charts, real-time updates, and customizable dashboards.",
-      gradient: "from-cyan-900/40 to-blue-900/40",
-      status: "Open for Contributions",
-      technologies: ["D3.js", "React", "TypeScript", "WebGL"],
-      category: "Working",
-      version: "v3.0.1",
-    },
-    {
-      id: "ai-chatbot-framework",
-      title: "AI Chatbot Framework",
-      description:
-        "Modular chatbot framework with natural language processing, multi-language support, and easy integration.",
-      gradient: "from-green-900/40 to-emerald-900/40",
-      status: "Building",
-      technologies: ["Python", "TensorFlow", "FastAPI", "React"],
-      category: "Building",
-      version: "v0.5.0-beta",
-    },
-    {
-      id: "clouddeploy",
-      title: "CloudDeploy",
-      description:
-        "Automated deployment platform supporting multiple cloud providers with zero-downtime deployments and rollback.",
-      gradient: "from-orange-900/40 to-red-900/40",
-      status: "Open for Contributions",
-      technologies: ["AWS", "Docker", "Go", "Kubernetes"],
-      category: "Working",
-      version: "v2.4.0",
-    },
-    {
-      id: "mobilefirst-cms",
-      title: "MobileFirst CMS",
-      description:
-        "Headless CMS optimized for mobile applications with offline support, sync capabilities, and real-time updates.",
-      gradient: "from-indigo-900/40 to-purple-900/40",
-      status: "Open for Contributions",
-      technologies: ["React Native", "Node.js", "MongoDB", "GraphQL"],
-      category: "Working",
-      version: "v1.8.5",
-    },
-    {
-      id: "blockchain-wallet",
-      title: "Blockchain Wallet",
-      description:
-        "Secure cryptocurrency wallet with multi-chain support, DeFi integration, and hardware wallet compatibility.",
-      gradient: "from-yellow-900/40 to-orange-900/40",
-      status: "Building",
-      technologies: ["Solidity", "Web3.js", "React", "TypeScript"],
-      category: "Building",
-      version: "v0.3.0-alpha",
-    },
-    {
-      id: "video-streaming",
-      title: "Video Streaming Platform",
-      description:
-        "Scalable video streaming service with adaptive bitrate, live streaming, and content delivery optimization.",
-      gradient: "from-rose-900/40 to-pink-900/40",
-      status: "Open for Contributions",
-      technologies: ["WebRTC", "Node.js", "AWS", "FFmpeg"],
-      category: "Working",
-      version: "v1.2.0",
-    },
-    {
-      id: "ar-navigation",
-      title: "AR Navigation App",
-      description:
-        "Augmented reality navigation app with real-time directions, indoor mapping, and location-based services.",
-      gradient: "from-teal-900/40 to-cyan-900/40",
-      status: "Building",
-      technologies: ["ARKit", "Swift", "Core Location", "MapKit"],
-      category: "Building",
-      version: "v0.2.0-beta",
-    },
-  ];
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const snapshot = await getDocs(collection(db, "projects"));
+        const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setProjects(projectsData);
+      } catch (error) {
+        console.error("Error loading projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
 
   // --- Logic: Calculate Counts Dynamically ---
   const counts: { [key: string]: number } = {
@@ -293,28 +199,53 @@ export default function ProjectsPage() {
               className="group flex flex-col bg-neutral-900/40 border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-all duration-300"
             >
               {/* --- Image Area (Browser Mockup) --- */}
-              <div
-                className={`h-56 w-full bg-gradient-to-br ${project.gradient} relative overflow-hidden flex items-end justify-center px-8 pt-10`}
-              >
-                {/* Browser Window */}
-                <div className="w-full h-full bg-[#0a0a0a] rounded-t-lg shadow-2xl border border-white/10 flex flex-col transform translate-y-4 group-hover:translate-y-2 transition-transform duration-500 ease-out">
-                  {/* Window Bar - Professional Monochrome */}
-                  <div className="h-8 border-b border-white/5 flex items-center px-4 gap-1.5 bg-white/5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/10"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/10"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/10"></div>
-                  </div>
+              <div className="h-56 w-full relative overflow-hidden flex items-end justify-center px-8 pt-10">
+                {project.mockupImage ? (
+                  <img 
+                    src={`/mockups/${project.mockupImage}`} 
+                    alt={`${project.title} mockup`}
+                    className="w-full h-full object-cover rounded-t-lg shadow-2xl border border-white/10"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="w-full h-full bg-gradient-to-br ${project.gradient || 'from-neutral-800 to-neutral-900'} rounded-t-lg shadow-2xl border border-white/10 flex flex-col transform translate-y-4 group-hover:translate-y-2 transition-transform duration-500 ease-out">
+                            <div class="h-8 border-b border-white/5 flex items-center px-4 gap-1.5 bg-white/5">
+                              <div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+                              <div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+                              <div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+                            </div>
+                            <div class="flex-1 p-6 flex flex-col items-center justify-center text-center">
+                              <h3 class="text-lg font-bold text-white tracking-tight">${project.title}</h3>
+                              <p class="text-[10px] font-mono text-neutral-600 mt-2">${project.version || 'v1.0.0'}</p>
+                            </div>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${project.gradient || 'from-neutral-800 to-neutral-900'} rounded-t-lg shadow-2xl border border-white/10 flex flex-col transform translate-y-4 group-hover:translate-y-2 transition-transform duration-500 ease-out`}>
+                    {/* Window Bar - Professional Monochrome */}
+                    <div className="h-8 border-b border-white/5 flex items-center px-4 gap-1.5 bg-white/5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+                    </div>
 
-                  {/* Window Body */}
-                  <div className="flex-1 p-6 flex flex-col items-center justify-center text-center">
-                    <h3 className="text-lg font-bold text-white tracking-tight">
-                      {project.title}
-                    </h3>
-                    <p className="text-[10px] font-mono text-neutral-600 mt-2">
-                      {project.version}
-                    </p>
+                    {/* Window Body */}
+                    <div className="flex-1 p-6 flex flex-col items-center justify-center text-center">
+                      <h3 className="text-lg font-bold text-white tracking-tight">
+                        {project.title}
+                      </h3>
+                      <p className="text-[10px] font-mono text-neutral-600 mt-2">
+                        {project.version || "v1.0.0"}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* --- Card Content --- */}
@@ -344,7 +275,7 @@ export default function ProjectsPage() {
                     </h3>
                     <div className="min-h-[32px] flex items-center">
                       <div className="flex flex-wrap gap-2">
-                        {project.technologies.slice(0, 5).map((tech, i) => (
+                        {project.technologies.slice(0, 5).map((tech: string, i: number) => (
                           <TechIcon key={i} name={tech} />
                         ))}
                       </div>
