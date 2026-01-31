@@ -346,22 +346,19 @@ export default function FeatureIdeaPage() {
                 <div className="flex flex-col">
                   <Label>Type</Label>
                   <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <button
-                        type="button"
-                        className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-3.5 text-sm text-left hover:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-700 transition-all flex items-center justify-between group"
+                    <DropdownMenuTrigger
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-3.5 text-sm text-left hover:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-700 transition-all flex items-center justify-between group"
+                    >
+                      <span
+                        className={
+                          formData.featureType
+                            ? "text-white"
+                            : "text-zinc-600"
+                        }
                       >
-                        <span
-                          className={
-                            formData.featureType
-                              ? "text-white"
-                              : "text-zinc-600"
-                          }
-                        >
-                          {formData.featureType || "Select type"}
-                        </span>
-                        <ChevronDown className="w-4 h-4 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                      </button>
+                        {formData.featureType || "Select type"}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] bg-[#09090b] border-zinc-800 text-zinc-300">
                       {[
@@ -391,20 +388,17 @@ export default function FeatureIdeaPage() {
                 <div className="flex flex-col">
                   <Label>Priority</Label>
                   <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <button
-                        type="button"
-                        className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-3.5 text-sm text-left hover:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-700 transition-all flex items-center justify-between group"
+                    <DropdownMenuTrigger
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-3.5 text-sm text-left hover:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-700 transition-all flex items-center justify-between group"
+                    >
+                      <span
+                        className={
+                          formData.priority ? "text-white" : "text-zinc-600"
+                        }
                       >
-                        <span
-                          className={
-                            formData.priority ? "text-white" : "text-zinc-600"
-                          }
-                        >
-                          {formData.priority || "Select priority"}
-                        </span>
-                        <ChevronDown className="w-4 h-4 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                      </button>
+                        {formData.priority || "Select priority"}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] bg-[#09090b] border-zinc-800 text-zinc-300">
                       {["Low", "Medium", "High"].map((priority) => (
