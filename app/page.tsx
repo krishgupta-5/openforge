@@ -1,70 +1,89 @@
+"use client";
+
+import React from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { Users, Code, Globe, Zap, ArrowRight } from "lucide-react";
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#050505] text-white font-sans selection:bg-white/20 flex flex-col items-center justify-center p-4">
-      {/* --- Placeholder Header --- */}
-      <div className="text-center mb-12 space-y-3">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-white">
-          OpenForge
-        </h1>
-        <p className="text-zinc-500 text-xs uppercase tracking-[0.2em] font-medium border border-white/10 inline-block px-3 py-1 rounded-full bg-white/5">
-          Landing Page Undecided
-        </p>
-      </div>
-
-      {/* --- Dev Navigation Links --- */}
-      <div className="w-full max-w-md border border-white/10 rounded-2xl p-8 bg-zinc-900/20 backdrop-blur-sm">
-        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-          <h2 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-            Dev Navigation
-          </h2>
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/50 animate-pulse"></div>
+    <div className="min-h-screen bg-[#050505] text-zinc-400 font-sans selection:bg-zinc-800 selection:text-white flex flex-col items-center relative overflow-hidden">
+      
+      <main className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl px-6 pb-20 pt-32 relative z-10">
+        
+        {/* Badge with Green Blink */}
+        <div className="mb-8 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 backdrop-blur-sm hover:border-zinc-700 hover:bg-zinc-900/50 transition-all cursor-default">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-[11px] font-medium text-zinc-300 tracking-wide">
+            Open Source <span className="text-zinc-600 px-1">·</span> Community Driven <span className="text-zinc-600 px-1">·</span> V0
+          </span>
         </div>
 
-        <nav className="flex flex-col gap-1">
-          <NavLink href="/projects" label="Projects Page" path="/projects" />
-          <NavLink href="/ideas" label="Ideas Page" path="/ideas" />
-          <NavLink
-            href="/contribute"
-            label="Contribute Page"
-            path="/contribute"
-          />
-          <NavLink href="/about" label="About Page" path="/about" />
-        </nav>
-      </div>
-    </main>
+        {/* Headline */}
+        <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6">
+          Build open source.
+          <br />
+          <span className="text-zinc-500">Together.</span>
+        </h1>
+
+        {/* Subtitle */}
+        <p className="text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed text-zinc-400">
+          Share project ideas, contribute to open-source code,
+          and collaborate with developers — without the noise.
+        </p>
+
+        {/* Actions Row */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center mb-20 w-full justify-center">
+          
+          {/* 1. Primary Action */}
+          <Link 
+            href="/projects" 
+            className="bg-white text-black min-w-[140px] px-6 py-3 rounded-md font-medium text-sm hover:bg-zinc-200 transition-all flex items-center justify-center gap-2 group"
+          >
+            Start Building
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          {/* 2. Secondary Action */}
+          <Link 
+            href="/ideas" 
+            className="px-6 py-3 min-w-[140px] rounded-md font-medium text-sm border border-zinc-800 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+          >
+            Share an Idea
+          </Link>
+
+          {/* 3. Community POP - Dark Surface, Light Border, Subtle Shadow */}
+          <Link 
+            href="/community" 
+            className="px-6 py-3 min-w-[140px] rounded-md font-medium text-sm bg-zinc-900 text-white border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-500 hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.1)] transition-all flex items-center justify-center gap-2"
+          >
+            <Users className="w-4 h-4 text-zinc-400" />
+            Join Community
+          </Link>
+        </div>
+
+        {/* Compact Feature Grid - No Shadow */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-zinc-800 border border-zinc-800 rounded-lg w-full max-w-2xl overflow-hidden">
+          <FeatureCell icon={Globe} label="Open Source" />
+          <FeatureCell icon={Code} label="Ideas" />
+          <FeatureCell icon={Users} label="Collaborate" />
+          <FeatureCell icon={Zap} label="Build" />
+        </div>
+
+      </main>
+    </div>
   );
 }
 
-// --- Helper Component for Cleaner Code ---
-function NavLink({
-  href,
-  label,
-  path,
-}: {
-  href: string;
-  label: string;
-  path: string;
-}) {
+function FeatureCell({ icon: Icon, label }: { icon: any; label: string }) {
   return (
-    <Link
-      href={href}
-      className="group flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all duration-200"
-    >
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
-          {label}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-mono text-zinc-600 group-hover:text-zinc-500 transition-colors">
-          {path}
-        </span>
-        <ArrowRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-      </div>
-    </Link>
+    <div className="bg-[#050505] py-6 px-4 flex flex-col items-center justify-center gap-3 group hover:bg-zinc-900/20 transition-colors cursor-default">
+      <Icon className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors duration-300" />
+      <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500 group-hover:text-zinc-300 transition-colors">
+        {label}
+      </span>
+    </div>
   );
 }
