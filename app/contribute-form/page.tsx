@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Check,
@@ -12,9 +12,11 @@ import {
   Phone,
   User,
   Lock,
+  Link as LinkIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createProjectContribution } from "@/lib/firebase";
+import { getUserData } from "@/lib/createUser";
+import LoginPopup from "@/components/LoginPopup";
 
 // --- Custom UI Components ---
 
@@ -91,12 +95,14 @@ export default function ContributionFormPage() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   const projectName = searchParams.get('projectName');
+  const { user, isSignedIn } = useUser();
   
   const [formData, setFormData] = useState({
     name: "",
     github: "",
     linkedin: "",
     mobile: "",
+    prLink: "",
     title: "",
     description: "",
     contributionType: "",
@@ -105,9 +111,41 @@ export default function ContributionFormPage() {
     howCanHelp: "",
   });
 
+  // Pre-fill user data from authentication and Firebase
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (isSignedIn && user) {
+        const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+        
+        // First set basic info from Clerk
+        setFormData(prev => ({
+          ...prev,
+          name: fullName || ""
+        }));
+        
+        // Then fetch additional data from Firebase
+        try {
+          const userData = await getUserData(user.id);
+          if (userData) {
+            setFormData(prev => ({
+              ...prev,
+              github: userData.github || "",
+              linkedin: userData.linkedin || ""
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, [isSignedIn, user]);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const contributionTypes = [
     "Feature",
@@ -181,6 +219,13 @@ export default function ContributionFormPage() {
       newErrors.timeline = "Please select a timeline";
     }
 
+    // PR Link validation
+    if (!formData.prLink.trim()) {
+      newErrors.prLink = "PR Link is required";
+    } else if (!/^https:\/\/github\.com\/[\w\-\.]+\/[\w\-\.]+\/pull\/\d+/.test(formData.prLink.trim())) {
+      newErrors.prLink = "Please enter a valid GitHub PR link (e.g., https://github.com/username/repo/pull/123)";
+    }
+
     // Optional field validations (only if filled)
     if (formData.name && formData.name.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
@@ -205,6 +250,12 @@ export default function ContributionFormPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if user is signed in
+    if (!isSignedIn) {
+      setShowLoginPopup(true);
+      return;
+    }
+    
     if (!validateForm()) {
       return;
     }
@@ -227,6 +278,7 @@ export default function ContributionFormPage() {
         github: formData.github || 'N/A',
         linkedin: formData.linkedin,
         mobile: formData.mobile,
+        prLink: formData.prLink,
         projectId: projectId,
         projectName: decodeURIComponent(projectName),
       };
@@ -244,6 +296,7 @@ export default function ContributionFormPage() {
           github: "",
           linkedin: "",
           mobile: "",
+          prLink: "",
           title: "",
           description: "",
           contributionType: "",
@@ -340,7 +393,7 @@ export default function ContributionFormPage() {
                       name="github"
                       value={formData.github}
                       onChange={handleInputChange}
-                      placeholder="username"
+                      placeholder="https://github.com/username"
                       className="pl-11"
                       error={errors.github}
                     />
@@ -354,7 +407,7 @@ export default function ContributionFormPage() {
                       name="linkedin"
                       value={formData.linkedin}
                       onChange={handleInputChange}
-                      placeholder="in/username"
+                      placeholder="https://linkedin.com/in/username"
                       className="pl-11"
                       error={errors.linkedin}
                     />
@@ -364,7 +417,7 @@ export default function ContributionFormPage() {
 
               {/* Mobile No with Privacy Note */}
               <div>
-                <Label>Mobile No</Label>
+                <Label>Mobile No <span className="text-zinc-600 font-normal ml-1">(Optional)</span></Label>
                 <div className="relative">
                   <Phone className="absolute left-4 top-3.5 w-4 h-4 text-zinc-500 pointer-events-none" />
                   <Input
@@ -387,6 +440,26 @@ export default function ContributionFormPage() {
                     with anyone.
                   </p>
                 </div>
+              </div>
+
+              {/* PR Link */}
+              <div>
+                <Label>PR Link <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-4 top-3.5 w-4 h-4 text-zinc-500 pointer-events-none" />
+                  <Input
+                    name="prLink"
+                    value={formData.prLink}
+                    onChange={handleInputChange}
+                    placeholder="https://github.com/username/repo/pull/123"
+                    className="pl-11"
+                    required
+                    error={errors.prLink}
+                  />
+                </div>
+                <p className="text-xs text-zinc-500 mt-2">
+                  Share the link to your pull request for this contribution
+                </p>
               </div>
             </div>
           </div>
@@ -599,6 +672,13 @@ export default function ContributionFormPage() {
           </div>
         </form>
       </div>
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to submit your contribution and join our community."
+      />
     </div>
   );
 }

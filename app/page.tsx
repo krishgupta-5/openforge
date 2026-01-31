@@ -1,10 +1,23 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Users, Code, Globe, Zap, ArrowRight } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import LoginPopup from "@/components/LoginPopup";
 
 export default function LandingPage() {
+  const { isSignedIn } = useUser();
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  const handleShareIdea = () => {
+    if (isSignedIn) {
+      window.location.href = "/submit-idea";
+    } else {
+      setShowLoginPopup(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-400 font-sans selection:bg-zinc-800 selection:text-white flex flex-col items-center relative overflow-hidden">
       
@@ -47,12 +60,12 @@ export default function LandingPage() {
           </Link>
 
           {/* 2. Secondary Action */}
-          <Link 
-            href="/ideas" 
+          <button 
+            onClick={handleShareIdea}
             className="px-6 py-3 min-w-[140px] rounded-md font-medium text-sm border border-zinc-800 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
           >
             Share an Idea
-          </Link>
+          </button>
 
           {/* 3. Community POP - Dark Surface, Light Border, Subtle Shadow */}
           <Link 
@@ -73,6 +86,13 @@ export default function LandingPage() {
         </div>
 
       </main>
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to share your idea and collaborate with our community."
+      />
     </div>
   );
 }

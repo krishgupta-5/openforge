@@ -12,6 +12,7 @@ import {
   Users,
   Briefcase,
   Activity,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
@@ -20,6 +21,8 @@ import { useUser } from "@clerk/nextjs";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { getFeaturesByProject, ProjectFeature } from "@/lib/firebase";
 import { getContributionsByProject, ProjectContribution } from "@/lib/firebase";
+import LoginPopup from "@/components/LoginPopup";
+import { useClerk } from "@clerk/nextjs";
 
 // --- Components ---
 
@@ -58,11 +61,13 @@ export default function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
   const [project, setProject] = useState<any>(null);
   const [approvedFeatures, setApprovedFeatures] = useState<ProjectFeature[]>([]);
   const [approvedContributions, setApprovedContributions] = useState<ProjectContribution[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const { openSignIn } = useClerk();
 
   useEffect(() => {
     async function loadProject() {
@@ -224,21 +229,33 @@ export default function ProjectDetailPage({
 
           {/* Compact Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Link
-              href={`/feature-ideas?projectId=${id}&projectName=${encodeURIComponent(project.title)}`}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm font-semibold hover:bg-yellow-500/20 transition-all hover:scale-105 active:scale-95"
+            <button
+              onClick={() => {
+                if (!isSignedIn) {
+                  setShowLoginPopup(true);
+                } else {
+                  window.location.href = `/feature-ideas?projectId=${id}&projectName=${encodeURIComponent(project.title)}`;
+                }
+              }}
+              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-400 text-base font-bold hover:from-yellow-500/30 hover:to-orange-500/30 hover:border-yellow-500/50 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-yellow-500/10"
             >
-              <Lightbulb className="w-3.5 h-3.5" />
-              Idea
-            </Link>
+              <Lightbulb className="w-4 h-4" />
+              HAVE AN IDEA ?
+            </button>
 
-            <Link
-              href={`/contribute-form?projectId=${id}&projectName=${encodeURIComponent(project.title)}`}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm font-semibold hover:bg-emerald-500/20 transition-all hover:scale-105 active:scale-95"
+            <button
+              onClick={() => {
+                if (!isSignedIn) {
+                  setShowLoginPopup(true);
+                } else {
+                  window.location.href = `/contribute-form?projectId=${id}&projectName=${encodeURIComponent(project.title)}`;
+                }
+              }}
+              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 text-emerald-400 text-base font-bold hover:from-emerald-500/30 hover:to-green-500/30 hover:border-emerald-500/50 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/10"
             >
-              <GitPullRequest className="w-3.5 h-3.5" />
-              Contribute
-            </Link>
+              <GitPullRequest className="w-4 h-4" />
+              WANTS TO CONTRIBUTE ?
+            </button>
 
             <div className="w-px h-6 bg-zinc-800 mx-1 hidden sm:block"></div>
 
@@ -316,7 +333,7 @@ export default function ProjectDetailPage({
               ),
           )}
 
-          {/* Features */}
+          {/* Features Markdown */}
           {project.features && (
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-white mb-4 group flex items-center gap-2 cursor-default">
@@ -328,100 +345,74 @@ export default function ProjectDetailPage({
             </div>
           )}
 
-          {/* Tech Stack */}
-          {project.techStack && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-4 group flex items-center gap-2 cursor-default">
-                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">#</span> Tech Stack
-              </h2>
-              <ul className="list-disc list-inside space-y-2 text-zinc-400 marker:text-white pl-8">
-                {typeof project.techStack === "string"
-                  ? project.techStack
-                      .split(",")
-                      .map((tech: string, i: number) => (
-                        <li key={i}>{tech.trim()}</li>
-                      ))
-                  : Array.isArray(project.techStack)
-                    ? project.techStack.map((tech: string, i: number) => (
-                        <li key={i}>{tech}</li>
-                      ))
-                    : null}
-              </ul>
-            </div>
-          )}
-
-          {/* After launch & Impact */}
-          {project.impact && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-4 group flex items-center gap-2 cursor-default">
-                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">#</span> After launch & Impact
-              </h2>
-              <div className="text-zinc-400 leading-relaxed prose prose-invert prose-li:marker:text-white pl-8">
-                <MarkdownRenderer content={project.impact} />
-              </div>
-            </div>
-          )}
-
-          {/* Future Plans */}
-          {project.futurePlans && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-4 group flex items-center gap-2 cursor-default">
-                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">#</span> Future Plans
-              </h2>
-              <div className="text-zinc-400 leading-relaxed prose prose-invert prose-li:marker:text-white pl-8">
-                <MarkdownRenderer content={project.futurePlans} />
-              </div>
-            </div>
-          )}
-
           {/* Idea Contributors Section */}
           {approvedFeatures.length > 0 && (
             <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-6 group flex items-center gap-2 cursor-default">
+              <h2 className="text-2xl font-bold text-white mb-6 group flex items-center gap-3 cursor-default">
                 <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">#</span> 
-                <Lightbulb className="w-6 h-6 text-yellow-500" />
+                <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                    <Lightbulb className="w-5 h-5 text-yellow-500" />
+                </div>
                 Idea Contributors
               </h2>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 {approvedFeatures.map((feature) => (
-                  <div key={feature.id} className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
-                          <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-medium">
-                            Approved
-                          </span>
+                  <div key={feature.id} className="group relative p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
+                    {/* Hover Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+
+                    <div className="relative flex flex-col gap-4">
+                        {/* Header: Title & Meta */}
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-semibold text-zinc-100 text-lg leading-tight group-hover:text-yellow-400 transition-colors">
+                                        {feature.title}
+                                    </h3>
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold tracking-wider">
+                                        Approved
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-zinc-500">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center">
+                                            <User className="w-3 h-3 text-zinc-400" />
+                                        </div>
+                                        <span className="font-medium text-zinc-400">{feature.name}</span>
+                                    </div>
+                                    <span className="text-zinc-700">•</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        {feature.createdAt?.toDate ? feature.createdAt.toDate().toLocaleDateString() : 'Recent'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a
+                                href={`https://github.com/${feature.github}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-white hover:text-black hover:border-white transition-all shrink-0"
+                                title={`View ${feature.github}'s profile`}
+                            >
+                                <Github className="w-4.5 h-4.5" />
+                            </a>
                         </div>
-                        <p className="text-zinc-400 text-sm mb-3 line-clamp-2">{feature.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-zinc-500">
-                          <div className="flex items-center gap-1">
-                            <User className="w-3 h-3" />
-                            <span className="font-medium">{feature.name}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {feature.createdAt?.toDate ? feature.createdAt.toDate().toLocaleDateString() : 'Unknown'}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="px-2 py-1 bg-zinc-800 rounded text-xs">{feature.category}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="px-2 py-1 bg-zinc-800 rounded text-xs">{feature.difficulty}</span>
-                          </div>
+
+                        {/* Body */}
+                        <p className="text-sm text-zinc-400 leading-relaxed pl-1 border-l-2 border-zinc-800">
+                            {feature.description}
+                        </p>
+
+                        {/* Footer: Tags */}
+                        <div className="flex flex-wrap items-center gap-2 pt-2">
+                             <span className="px-2.5 py-1 rounded-md bg-zinc-800/40 border border-zinc-700/50 text-xs text-zinc-400 font-medium">
+                                {feature.category}
+                             </span>
+                             <span className="px-2.5 py-1 rounded-md bg-zinc-800/40 border border-zinc-700/50 text-xs text-zinc-400 font-medium">
+                                {feature.difficulty}
+                             </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <a
-                          href={`https://github.com/${feature.github}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors text-zinc-300 hover:text-white"
-                        >
-                          <Github className="w-3 h-3" />
-                          {feature.github}
-                        </a>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -432,54 +423,76 @@ export default function ProjectDetailPage({
           {/* Contributors Section */}
           {approvedContributions.length > 0 && (
             <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-6 group flex items-center gap-2 cursor-default">
+              <h2 className="text-2xl font-bold text-white mb-6 group flex items-center gap-3 cursor-default">
                 <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">#</span> 
-                <GitPullRequest className="w-6 h-6 text-emerald-500" />
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <GitPullRequest className="w-5 h-5 text-emerald-500" />
+                </div>
                 Contributors
               </h2>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 {approvedContributions.map((contribution) => (
-                  <div key={contribution.id} className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-white">{contribution.title}</h3>
-                          <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-medium">
-                            Approved
-                          </span>
+                  <div key={contribution.id} className="group relative p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
+                    {/* Hover Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+
+                    <div className="relative flex flex-col gap-4">
+                        {/* Header: Title & Meta */}
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-semibold text-zinc-100 text-lg leading-tight group-hover:text-emerald-400 transition-colors">
+                                        {contribution.title}
+                                    </h3>
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold tracking-wider">
+                                        Approved
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-zinc-500">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center">
+                                            <User className="w-3 h-3 text-zinc-400" />
+                                        </div>
+                                        <span className="font-medium text-zinc-400">{contribution.name}</span>
+                                    </div>
+                                    <span className="text-zinc-700">•</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        {contribution.createdAt?.toDate ? contribution.createdAt.toDate().toLocaleDateString() : 'Recent'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a
+                                href={`https://github.com/${contribution.github}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-white hover:text-black hover:border-white transition-all shrink-0"
+                                title={`View ${contribution.github}'s profile`}
+                            >
+                                <Github className="w-4.5 h-4.5" />
+                            </a>
                         </div>
-                        <p className="text-zinc-400 text-sm mb-3 line-clamp-2">{contribution.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-zinc-500">
-                          <div className="flex items-center gap-1">
-                            <User className="w-3 h-3" />
-                            <span className="font-medium">{contribution.name}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {contribution.createdAt?.toDate ? contribution.createdAt.toDate().toLocaleDateString() : 'Unknown'}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="px-2 py-1 bg-zinc-800 rounded text-xs">{contribution.contributionType}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="px-2 py-1 bg-zinc-800 rounded text-xs">{contribution.experienceLevel}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="px-2 py-1 bg-zinc-800 rounded text-xs">{contribution.timeline}</span>
-                          </div>
+
+                        {/* Body */}
+                        <p className="text-sm text-zinc-400 leading-relaxed pl-1 border-l-2 border-zinc-800">
+                            {contribution.description}
+                        </p>
+
+                        {/* Footer: Tags */}
+                        <div className="flex flex-wrap items-center gap-2 pt-2">
+                             <span className="px-2.5 py-1 rounded-md bg-zinc-800/40 border border-zinc-700/50 text-xs text-zinc-400 font-medium">
+                                {contribution.contributionType}
+                             </span>
+                             <span className="px-2.5 py-1 rounded-md bg-zinc-800/40 border border-zinc-700/50 text-xs text-zinc-400 font-medium">
+                                {contribution.experienceLevel}
+                             </span>
+                             {contribution.timeline && (
+                                <span className="px-2.5 py-1 rounded-md bg-zinc-800/40 border border-zinc-700/50 text-xs text-zinc-400 font-medium">
+                                    {contribution.timeline}
+                                </span>
+                             )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <a
-                          href={`https://github.com/${contribution.github}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors text-zinc-300 hover:text-white"
-                        >
-                          <Github className="w-3 h-3" />
-                          {contribution.github}
-                        </a>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -498,6 +511,11 @@ export default function ProjectDetailPage({
           </div>
         </div>
       </div>
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to submit ideas or contribute to this project."
+      />
     </div>
   );
 }

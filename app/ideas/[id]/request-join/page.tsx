@@ -15,6 +15,8 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getIdeaById, Idea } from "@/lib/firebase";
+import { useUser } from "@clerk/nextjs";
+import LoginPopup from "@/components/LoginPopup";
 
 // --- Custom UI Components ---
 
@@ -69,6 +71,8 @@ export default function RequestContributionForm() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const { user, isSignedIn } = useUser();
 
   React.useEffect(() => {
     const fetchIdea = async () => {
@@ -98,6 +102,13 @@ export default function RequestContributionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is signed in
+    if (!isSignedIn) {
+      setShowLoginPopup(true);
+      return;
+    }
+    
     if (!isFormValid) return;
     
     setIsSubmitting(true);
@@ -332,6 +343,13 @@ export default function RequestContributionForm() {
 
         </form>
       </div>
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to request to join this project and collaborate with the team."
+      />
     </div>
   );
 }

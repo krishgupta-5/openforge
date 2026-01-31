@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getIdeaById, Idea, addVote, removeVote, getVoteCount, hasUserVoted } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
+import LoginPopup from "@/components/LoginPopup";
 
 // --- Components ---
 
@@ -38,6 +39,15 @@ export default function IdeaDetailPage() {
   const [votingLoading, setVotingLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  const handleRequestToJoin = () => {
+    if (user) {
+      window.location.href = `/ideas/${params.id}/request-join`;
+    } else {
+      setShowLoginPopup(true);
+    }
+  };
 
   useEffect(() => {
     const fetchIdeaAndVotes = async () => {
@@ -314,12 +324,12 @@ export default function IdeaDetailPage() {
 
               <div className="pt-4 border-t border-zinc-800/50">
                 <h4 className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">Collaboration</h4>
-                <Link 
-                  href={`/ideas/${params.id}/request-join`}
+                <button 
+                  onClick={handleRequestToJoin}
                   className="w-full py-3 rounded-lg border border-dashed border-zinc-700 text-zinc-400 text-sm hover:border-zinc-500 hover:text-white transition-all flex items-center justify-center"
                 >
                   👋 Request to Join Project
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -399,6 +409,13 @@ export default function IdeaDetailPage() {
           </div>
         </div>
       )}
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to request to join this project and collaborate with the team."
+      />
     </div>
   );
 }

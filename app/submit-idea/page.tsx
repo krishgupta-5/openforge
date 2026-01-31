@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createIdea } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
+import LoginPopup from "@/components/LoginPopup";
 
 // --- Custom UI Components ---
 
@@ -89,6 +90,7 @@ export default function ShareIdeaPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   // Set user name when component mounts or user changes
   useEffect(() => {
@@ -133,6 +135,13 @@ export default function ShareIdeaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is signed in
+    if (!user) {
+      setShowLoginPopup(true);
+      return;
+    }
+    
     if (!isFormValid) return;
     
     setIsSubmitting(true);
@@ -187,22 +196,8 @@ export default function ShareIdeaPage() {
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-zinc-800">
       <div className="max-w-2xl mx-auto px-6 py-24">
         
-        {/* --- User Authentication Check --- */}
-        {!user ? (
-          <div className="text-center py-16">
-            <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
-            <p className="text-zinc-400 mb-6">You need to be signed in to submit an idea.</p>
-            <Link
-              href="/sign-in"
-              className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-neutral-200 transition-all"
-            >
-              Sign In
-            </Link>
-          </div>
-        ) : (
-          <>
-            {/* --- Header --- */}
-            <div className="mb-12">
+        {/* --- Header --- */}
+        <div className="mb-12">
               <Link
                 href="/ideas"
                 className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-white transition-colors mb-8"
@@ -303,6 +298,9 @@ export default function ShareIdeaPage() {
                       className="pl-11"
                     />
                   </div>
+                  <p className="text-xs text-zinc-500 mt-2">
+                    For collaboration coordination (optional)
+                  </p>
                 </div>
               </div>
 
@@ -492,9 +490,14 @@ export default function ShareIdeaPage() {
           </div>
 
         </form>
-        </>
-        )}
       </div>
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to share your idea and collaborate with our community."
+      />
     </div>
   );
 }

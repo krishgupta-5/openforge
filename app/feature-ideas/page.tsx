@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createProjectFeature } from "@/lib/firebase";
+import { getUserData } from "@/lib/createUser";
+import LoginPopup from "@/components/LoginPopup";
 
 // --- Custom UI Components ---
 
@@ -88,6 +91,7 @@ export default function FeatureIdeaPage() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   const projectName = searchParams.get('projectName');
+  const { user, isSignedIn } = useUser();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -100,9 +104,41 @@ export default function FeatureIdeaPage() {
     solution: "",
   });
 
+  // Pre-fill user data from authentication and Firebase
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (isSignedIn && user) {
+        const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+        
+        // First set basic info from Clerk
+        setFormData(prev => ({
+          ...prev,
+          name: fullName || ""
+        }));
+        
+        // Then fetch additional data from Firebase
+        try {
+          const userData = await getUserData(user.id);
+          if (userData) {
+            setFormData(prev => ({
+              ...prev,
+              github: userData.github || "",
+              linkedin: userData.linkedin || ""
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, [isSignedIn, user]);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -182,6 +218,12 @@ export default function FeatureIdeaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is signed in
+    if (!isSignedIn) {
+      setShowLoginPopup(true);
+      return;
+    }
     
     if (!validateForm()) {
       return;
@@ -310,7 +352,7 @@ export default function FeatureIdeaPage() {
                       name="github"
                       value={formData.github}
                       onChange={handleInputChange}
-                      placeholder="username"
+                      placeholder="https://github.com/username"
                       className="pl-11"
                       error={errors.github}
                     />
@@ -324,7 +366,7 @@ export default function FeatureIdeaPage() {
                       name="linkedin"
                       value={formData.linkedin}
                       onChange={handleInputChange}
-                      placeholder="in/username"
+                      placeholder="https://linkedin.com/in/username"
                       className="pl-11"
                       error={errors.linkedin}
                     />
@@ -492,6 +534,13 @@ export default function FeatureIdeaPage() {
         </div>
         </form>
       </div>
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to submit your feature proposal and contribute to our community."
+      />
     </div>
   );
 }

@@ -82,7 +82,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-10">
+    <div className="min-h-screen bg-[#050505] text-white px-10 pt-32">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-12">

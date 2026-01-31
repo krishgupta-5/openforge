@@ -285,6 +285,7 @@ export interface ProjectContribution {
   github: string;
   linkedin?: string;
   mobile?: string;
+  prLink?: string;
   status: 'pending' | 'approved' | 'rejected';
   projectId: string;
   projectName: string;

@@ -186,6 +186,7 @@ export default function ProjectsPage() {
         const snapshot = await getDocs(collection(db, "projects"));
         const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         console.log("Loaded projects:", projectsData); // Debug log
+        console.log("Project categories:", projectsData.map((p: any) => ({ id: p.id, title: p.title, category: p.category, status: p.status }))); // Debug categories
         setProjects(projectsData);
       } catch (error) {
         console.error("Error loading projects:", error);
@@ -210,14 +211,14 @@ export default function ProjectsPage() {
   // --- Logic: Calculate Counts Dynamically ---
   const counts: { [key: string]: number } = {
     All: projects.length,
-    Working: projects.filter((p) => p.category === "Working").length,
-    Building: projects.filter((p) => p.category === "Building").length,
+    Working: projects.filter((p) => p.category === "Working" || p.status === "Working").length,
+    Building: projects.filter((p) => p.category === "Building" || p.status === "Building").length,
   };
 
   const filteredProjects =
     activeTab === "All"
       ? projects
-      : projects.filter((p) => p.category === activeTab);
+      : projects.filter((p) => p.category === activeTab || p.status === activeTab);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-white/20 pb-32">

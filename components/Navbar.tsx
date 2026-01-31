@@ -35,6 +35,7 @@ export default function Navbar() {
             <NavLink href="/ideas">Ideas</NavLink>
             <NavLink href="/contribute">Contribute</NavLink>
             <NavLink href="/about">About</NavLink>
+            <NavLink href="/contact">Contact</NavLink>
           </div>
 
           {/* --- RIGHT: ACTIONS --- */}
@@ -103,6 +104,9 @@ export default function Navbar() {
                 </MobileNavLink>
                 <MobileNavLink href="/about" onClick={() => setIsMobileMenuOpen(false)}>
                   About
+                </MobileNavLink>
+                <MobileNavLink href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                  Contact
                 </MobileNavLink>
               </div>
               

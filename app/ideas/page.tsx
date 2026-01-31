@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getIdeas, Idea } from "@/lib/firebase";
+import { useUser } from "@clerk/nextjs";
+import LoginPopup from "@/components/LoginPopup";
 
 // --- Types ---
 type IdeaStatus = "Open" | "In Progress" | "Completed";
@@ -88,6 +90,16 @@ const TagIcon = ({ tag }: { tag: string }) => {
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const { isSignedIn } = useUser();
+
+  const handleShareIdea = () => {
+    if (isSignedIn) {
+      window.location.href = "/submit-idea";
+    } else {
+      setShowLoginPopup(true);
+    }
+  };
 
   useEffect(() => {
     const fetchApprovedIdeas = async () => {
@@ -149,13 +161,13 @@ export default function IdeasPage() {
         </p>
 
         <div className="pt-4">
-          <Link
-            href="/submit-idea"
+          <button
+            onClick={handleShareIdea}
             className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-8 py-3 rounded-full hover:bg-neutral-200 transition-all active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             Share an Idea
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -166,13 +178,13 @@ export default function IdeasPage() {
             <Sparkles className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No approved ideas yet</h3>
             <p className="text-zinc-400 mb-6">Be the first to share an amazing project idea!</p>
-            <Link
-              href="/submit-idea"
+            <button
+              onClick={handleShareIdea}
               className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-neutral-200 transition-all"
             >
               <Plus className="w-4 h-4" />
               Share an Idea
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -244,6 +256,13 @@ export default function IdeasPage() {
           </div>
         )}
       </div>
+      
+      {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        message="Please sign in to share your idea and collaborate with our community."
+      />
     </div>
   );
 }
