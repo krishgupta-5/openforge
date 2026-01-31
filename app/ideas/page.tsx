@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   ArrowRight,
@@ -13,72 +13,11 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { getIdeas, Idea } from "@/lib/firebase";
 
 // --- Types ---
 type IdeaStatus = "Open" | "In Progress" | "Completed";
 type IdeaType = "New Project" | "Feature Idea";
-
-interface Idea {
-  id: string;
-  title: string;
-  description: string;
-  type: IdeaType;
-  status: IdeaStatus;
-  tags: string[];
-  author: {
-    name: string;
-    username: string;
-  };
-  date: string;
-}
-
-// --- Mock Data ---
-const MOCK_IDEAS: Idea[] = [
-  {
-    id: "1",
-    title: "AI-Powered Study Planner",
-    description:
-      "An automated scheduler that takes your syllabus and generates a spaced-repetition study plan.",
-    type: "New Project",
-    status: "Open",
-    tags: ["AI", "Backend", "Frontend"],
-    author: { name: "Alex Chen", username: "@alexc" },
-    date: "2 days ago",
-  },
-  {
-    id: "2",
-    title: "Dark Mode for Dashboard",
-    description:
-      "Implement a system-aware dark mode toggle for the main student dashboard.",
-    type: "Feature Idea",
-    status: "In Progress",
-    tags: ["Frontend", "Design"],
-    author: { name: "Sarah Jones", username: "@sarahj" },
-    date: "5 days ago",
-  },
-  {
-    id: "3",
-    title: "Real-time Collaboration Notes",
-    description:
-      "Allow multiple users to edit the same note document simultaneously using WebSockets.",
-    type: "Feature Idea",
-    status: "Open",
-    tags: ["Backend", "Realtime"],
-    author: { name: "Mike Ross", username: "@miker" },
-    date: "1 week ago",
-  },
-  {
-    id: "4",
-    title: "Interactive Quiz Component",
-    description:
-      "A reusable React component for creating quizzes with timer and score tracking.",
-    type: "Feature Idea",
-    status: "Completed",
-    tags: ["Frontend", "React"],
-    author: { name: "Emily White", username: "@emilyw" },
-    date: "2 weeks ago",
-  },
-];
 
 // --- Components ---
 
@@ -147,6 +86,56 @@ const TagIcon = ({ tag }: { tag: string }) => {
 // --- Main Page ---
 
 export default function IdeasPage() {
+  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchApprovedIdeas = async () => {
+      try {
+        const approvedIdeas = await getIdeas('approved');
+        setIdeas(approvedIdeas);
+      } catch (error) {
+        console.error('Error fetching approved ideas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApprovedIdeas();
+  }, []);
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'Unknown';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return `${Math.floor(diffDays / 30)} months ago`;
+  };
+
+  const getTagsFromCategory = (category: string, difficulty: string) => {
+    const tags = [category];
+    if (difficulty.includes('Beginner')) tags.push('Beginner Friendly');
+    else if (difficulty.includes('Intermediate')) tags.push('Intermediate');
+    else if (difficulty.includes('Advanced')) tags.push('Advanced');
+    return tags;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-white/20 pb-32 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading ideas...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-white/20 pb-32">
       {/* --- Header Section (Matched Projects Page) --- */}
@@ -172,73 +161,88 @@ export default function IdeasPage() {
 
       <div className="max-w-7xl mx-auto px-6">
         {/* --- Ideas Grid --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {MOCK_IDEAS.map((idea) => (
-            <div
-              key={idea.id}
-              className="group flex flex-col bg-neutral-900/40 border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-all duration-300"
+        {ideas.length === 0 ? (
+          <div className="text-center py-16">
+            <Sparkles className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">No approved ideas yet</h3>
+            <p className="text-zinc-400 mb-6">Be the first to share an amazing project idea!</p>
+            <Link
+              href="/submit-idea"
+              className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-neutral-200 transition-all"
             >
-              {/* Card Content Area - Increased Padding to Match Projects Page */}
-              <div className="p-8 flex flex-col flex-grow h-full">
-                {/* Meta Row */}
-                <div className="flex items-center justify-between mb-6">
-                  <TypeBadge type={idea.type} />
-                  <StatusPill status={idea.status} />
-                </div>
-
-                {/* Title */}
-                <h3 className="text-xl font-bold text-white tracking-tight mb-3 group-hover:text-neutral-200 transition-colors">
-                  {idea.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-neutral-400 text-sm leading-relaxed mb-8 flex-grow">
-                  {idea.description}
-                </p>
-
-                {/* Bottom Section */}
-                <div className="mt-auto space-y-6">
-                  {/* Tags */}
-                  <div className="space-y-3">
-                    <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
-                      Tags
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {idea.tags.map((tag) => (
-                        <TagIcon key={tag} tag={tag} />
-                      ))}
-                    </div>
+              <Plus className="w-4 h-4" />
+              Share an Idea
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {ideas.map((idea) => (
+              <div
+                key={idea.id}
+                className="group flex flex-col bg-neutral-900/40 border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-all duration-300"
+              >
+                {/* Card Content Area - Increased Padding to Match Projects Page */}
+                <div className="p-8 flex flex-col flex-grow h-full">
+                  {/* Meta Row */}
+                  <div className="flex items-center justify-between mb-6">
+                    <TypeBadge type="New Project" />
+                    <StatusPill status="Open" />
                   </div>
 
-                  {/* Footer / Author */}
-                  <div className="flex items-center justify-between pt-5 border-t border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700 text-xs font-bold text-neutral-400">
-                        {idea.author.name.charAt(0)}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs text-neutral-300 font-medium">
-                          {idea.author.name}
-                        </span>
-                        <span className="text-[10px] text-neutral-600">
-                          {idea.date}
-                        </span>
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-3 group-hover:text-neutral-200 transition-colors">
+                    {idea.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-neutral-400 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
+                    {idea.problem}
+                  </p>
+
+                  {/* Bottom Section */}
+                  <div className="mt-auto space-y-6">
+                    {/* Tags */}
+                    <div className="space-y-3">
+                      <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                        Tags
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {getTagsFromCategory(idea.category, idea.difficulty).map((tag, index) => (
+                          <TagIcon key={index} tag={tag} />
+                        ))}
                       </div>
                     </div>
 
-                    <Link
-                      href={`/ideas/${idea.id}`}
-                      className="flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors group/btn"
-                    >
-                      View Details
-                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
-                    </Link>
+                    {/* Footer / Author */}
+                    <div className="flex items-center justify-between pt-5 border-t border-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700 text-xs font-bold text-neutral-400">
+                          {idea.name.charAt(0)}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-neutral-300 font-medium">
+                            {idea.name}
+                          </span>
+                          <span className="text-[10px] text-neutral-600">
+                            {formatDate(idea.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/ideas/${idea.id}`}
+                        className="flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors group/btn"
+                      >
+                        View Details
+                        <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

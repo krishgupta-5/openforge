@@ -11,7 +11,6 @@ import {
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { trackProjectView } from "@/lib/viewTracking";
 import { useUser } from "@clerk/nextjs";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
@@ -49,7 +48,6 @@ export default function ProjectDetailPage({
   const { user } = useUser();
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [viewTracked, setViewTracked] = useState(false);
 
   useEffect(() => {
     async function loadProject() {
@@ -59,11 +57,6 @@ export default function ProjectDetailPage({
 
         if (docSnap.exists()) {
           setProject({ id: docSnap.id, ...docSnap.data() });
-
-          if (!viewTracked) {
-            await trackProjectView(id, user?.id);
-            setViewTracked(true);
-          }
         } else {
           console.log("No such project!");
         }
@@ -74,7 +67,7 @@ export default function ProjectDetailPage({
       }
     }
     loadProject();
-  }, [id, user, viewTracked]);
+  }, [id, user]);
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Check,
@@ -20,6 +20,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { createIdea } from "@/lib/firebase";
+import { useUser } from "@clerk/nextjs";
 
 // --- Custom UI Components ---
 
@@ -64,9 +66,10 @@ const Textarea = ({
 // --- Main Page Component ---
 
 export default function ShareIdeaPage() {
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     // User Details
-    name: "Alex Chen", // Simulating Auto-filled
+    name: "", // Will be set from user data
     github: "",
     linkedin: "",
     mobile: "",
@@ -86,6 +89,20 @@ export default function ShareIdeaPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Set user name when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      const userName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user.username || user.emailAddresses[0]?.emailAddress || "User";
+      
+      setFormData(prev => ({
+        ...prev,
+        name: userName
+      }));
+    }
+  }, [user]);
 
   // --- Dropdown Options ---
   const categories = ["Web App", "Mobile App", "AI / ML", "Tool / Library", "Hardware", "Other"];
@@ -120,9 +137,23 @@ export default function ShareIdeaPage() {
     
     setIsSubmitting(true);
 
-    // Mock Submission
-    setTimeout(() => {
-      console.log("Idea Shared:", formData);
+    try {
+      // Save to Firebase
+      await createIdea({
+        name: formData.name,
+        github: formData.github,
+        linkedin: formData.linkedin,
+        mobile: formData.mobile,
+        helpContext: formData.helpContext,
+        title: formData.projectTitle,
+        problem: formData.problem,
+        solution: formData.solution,
+        category: formData.category,
+        difficulty: formData.difficulty,
+        lookingFor: formData.lookingFor,
+        leadProject: formData.leadProject,
+      });
+
       setIsSubmitted(true);
       setIsSubmitting(false);
 
@@ -145,31 +176,49 @@ export default function ShareIdeaPage() {
           leadProject: false,
         }));
       }, 3000);
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting idea:', error);
+      setIsSubmitting(false);
+      // You could show an error message here
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-zinc-800">
       <div className="max-w-2xl mx-auto px-6 py-24">
         
-        {/* --- Header --- */}
-        <div className="mb-12">
-          <Link
-            href="/ideas"
-            className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-white transition-colors mb-8"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back to Ideas
-          </Link>
+        {/* --- User Authentication Check --- */}
+        {!user ? (
+          <div className="text-center py-16">
+            <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
+            <p className="text-zinc-400 mb-6">You need to be signed in to submit an idea.</p>
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-neutral-200 transition-all"
+            >
+              Sign In
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* --- Header --- */}
+            <div className="mb-12">
+              <Link
+                href="/ideas"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-white transition-colors mb-8"
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                Back to Ideas
+              </Link>
 
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-3 flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-yellow-500" />
-            Share an Idea
-          </h1>
-          <p className="text-zinc-400 text-base">
-            Propose a new project to the community and find collaborators.
-          </p>
-        </div>
+              <h1 className="text-3xl font-bold tracking-tight text-white mb-3 flex items-center gap-3">
+                <Sparkles className="w-8 h-8 text-yellow-500" />
+                Share an Idea
+              </h1>
+              <p className="text-zinc-400 text-base">
+                Propose a new project to the community and find collaborators.
+              </p>
+            </div>
 
         {/* --- Success Toast --- */}
         {isSubmitted && (
@@ -178,8 +227,8 @@ export default function ShareIdeaPage() {
               <Check className="w-4 h-4 text-emerald-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Idea Published Successfully</p>
-              <p className="text-xs text-zinc-400">Your project is now live on the Ideas board.</p>
+              <p className="text-sm font-medium text-white">Idea Submitted Successfully</p>
+              <p className="text-xs text-zinc-400">Your idea is now pending admin review and will appear on the Ideas board once approved.</p>
             </div>
           </div>
         )}
@@ -443,6 +492,8 @@ export default function ShareIdeaPage() {
           </div>
 
         </form>
+        </>
+        )}
       </div>
     </div>
   );
