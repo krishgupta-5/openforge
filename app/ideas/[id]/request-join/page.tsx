@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getIdeaById, Idea } from "@/lib/firebase";
+import { getIdeaById, Idea, createIdeaContributionRequest } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
 import LoginPopup from "@/components/LoginPopup";
 
@@ -109,21 +109,26 @@ export default function RequestContributionForm() {
       return;
     }
     
-    if (!isFormValid) return;
+    if (!isFormValid || !idea || !params.id) return;
     
     setIsSubmitting(true);
 
-    // Mock Submission - In a real app, this would save to your backend
-    setTimeout(() => {
-      console.log("Request Submitted:", {
-        ...formData,
-        ideaId: params.id,
-        ideaTitle: idea?.title
+    try {
+      await createIdeaContributionRequest({
+        name: formData.name,
+        github: formData.github,
+        linkedin: formData.linkedin,
+        portfolio: formData.portfolio,
+        techStack: formData.techStack,
+        message: formData.message,
+        ideaId: params.id as string,
+        ideaTitle: idea.title
       });
+      
       setIsSubmitted(true);
       setIsSubmitting(false);
 
-      // Reset
+      // Reset form
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({
@@ -135,7 +140,11 @@ export default function RequestContributionForm() {
           message: ""
         });
       }, 3000);
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      setIsSubmitting(false);
+      // You could show an error message here
+    }
   };
 
   if (loading) {

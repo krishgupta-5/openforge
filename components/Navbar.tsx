@@ -65,7 +65,11 @@ export default function Navbar() {
                         "w-7 h-7 ring-1 ring-white/10 hover:ring-white/30 transition-all",
                     },
                   }}
+                  userProfileMode="navigation"
+                  userProfileUrl="/user-profile"
+                  afterSignOutUrl="/"
                 />
+
               </div>
             </SignedIn>
 

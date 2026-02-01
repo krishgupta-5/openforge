@@ -379,9 +379,120 @@ export async function updateProjectContributionStatus(id: string, status: 'pendi
 // Delete a project contribution
 export async function deleteProjectContribution(id: string) {
   try {
-    await deleteDoc(doc(db, 'projectContributions', id));
+    const contributionRef = doc(db, 'projectContributions', id);
+    await deleteDoc(contributionRef);
   } catch (error) {
     console.error('Error deleting project contribution:', error);
+    throw error;
+  }
+}
+
+// Idea Contribution Request interface (for requesting to join ideas)
+export interface IdeaContributionRequest {
+  id?: string;
+  name: string;
+  github: string;
+  linkedin?: string;
+  portfolio?: string;
+  techStack: string;
+  message?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  ideaId: string;
+  ideaTitle: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+// Create a new idea contribution request
+export async function createIdeaContributionRequest(requestData: Omit<IdeaContributionRequest, 'id' | 'createdAt' | 'updatedAt' | 'status'>) {
+  try {
+    const docRef = await addDoc(collection(db, 'ideaContributionRequests'), {
+      ...requestData,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating idea contribution request:', error);
+    throw error;
+  }
+}
+
+// Get all idea contribution requests with optional status filter
+export async function getIdeaContributionRequests(status?: 'pending' | 'approved' | 'rejected') {
+  try {
+    let q;
+    
+    if (status) {
+      q = query(collection(db, 'ideaContributionRequests'), where('status', '==', status), orderBy('createdAt', 'desc'));
+    } else {
+      q = query(collection(db, 'ideaContributionRequests'), orderBy('createdAt', 'desc'));
+    }
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as IdeaContributionRequest[];
+  } catch (error) {
+    console.error('Error getting idea contribution requests:', error);
+    throw error;
+  }
+}
+
+// Get requests for a specific idea
+export async function getRequestsByIdea(ideaId: string, status?: 'pending' | 'approved' | 'rejected') {
+  try {
+    let q;
+    
+    if (status) {
+      q = query(
+        collection(db, 'ideaContributionRequests'), 
+        where('ideaId', '==', ideaId),
+        where('status', '==', status), 
+        orderBy('createdAt', 'desc')
+      );
+    } else {
+      q = query(
+        collection(db, 'ideaContributionRequests'), 
+        where('ideaId', '==', ideaId),
+        orderBy('createdAt', 'desc')
+      );
+    }
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as IdeaContributionRequest[];
+  } catch (error) {
+    console.error('Error getting requests by idea:', error);
+    throw error;
+  }
+}
+
+// Update idea contribution request status
+export async function updateIdeaContributionRequestStatus(id: string, status: 'pending' | 'approved' | 'rejected') {
+  try {
+    const requestRef = doc(db, 'ideaContributionRequests', id);
+    await updateDoc(requestRef, {
+      status,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error updating idea contribution request status:', error);
+    throw error;
+  }
+}
+
+// Delete an idea contribution request
+export async function deleteIdeaContributionRequest(id: string) {
+  try {
+    const requestRef = doc(db, 'ideaContributionRequests', id);
+    await deleteDoc(requestRef);
+  } catch (error) {
+    console.error('Error deleting idea contribution request:', error);
     throw error;
   }
 }

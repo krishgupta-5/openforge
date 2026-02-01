@@ -30,7 +30,7 @@ export default function MarkdownRenderer({ content, className = "" }: MarkdownRe
               {children}
             </blockquote>
           ),
-          code: ({node, inline, children, ...props}) => 
+          code: ({node, inline, children, ...props}: any) => 
             inline ? (
               <code className="bg-zinc-800 px-2 py-1 rounded text-emerald-400 text-sm font-mono" {...props}>
                 {children}

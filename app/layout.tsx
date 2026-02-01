@@ -6,6 +6,7 @@ import { dark } from '@clerk/themes'
 import './globals.css'
 import Navbar from "@/components/Navbar"
 import SyncUser from "@/components/SyncUser"
+import ClerkModalFix from "@/components/ClerkModalFix"
 
 export const metadata: Metadata = {
   title: 'OpenForge',
@@ -23,26 +24,32 @@ export default function RootLayout({
         baseTheme: dark,
         elements: {
           modal: {
-            maxHeight: '70vh',
-            height: 'auto',
+            position: 'fixed !important',
+            top: '0 !important',
+            left: '0 !important',
+            right: '0 !important',
+            bottom: '0 !important',
             display: 'flex !important',
             alignItems: 'center !important',
             justifyContent: 'center !important',
-            position: 'fixed !important',
-            top: '50% !important',
-            left: '50% !important',
-            transform: 'translate(-50%, -50%) !important',
+            zIndex: '999999 !important',
+            padding: '1rem !important',
             margin: '0 !important',
-            padding: '0 !important'
+            maxHeight: '100vh !important',
+            maxWidth: '100vw !important',
+            transform: 'none !important'
           },
           modalCard: {
             position: 'relative !important',
+            margin: '0 !important',
             transform: 'none !important',
             top: 'auto !important',
             left: 'auto !important',
-            margin: '0 !important'
-          },
-          rootBox: 'clerk-custom'
+            right: 'auto !important',
+            bottom: 'auto !important',
+            maxHeight: '90vh !important',
+            overflowY: 'auto !important'
+          }
         }
       }}
     >
@@ -56,6 +63,7 @@ export default function RootLayout({
           <SyncUser />
           <Navbar />
           {children}
+          <ClerkModalFix />
         </body>
       </html>
     </ClerkProvider>

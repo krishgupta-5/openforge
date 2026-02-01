@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   ArrowLeft,
   Check,
@@ -91,11 +91,16 @@ const Textarea = ({
 
 // --- Main Page Component ---
 
-export default function ContributionFormPage() {
+function ContributionFormPageWrapper() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   const projectName = searchParams.get('projectName');
   const { user, isSignedIn } = useUser();
+
+  return <ContributionFormPage projectId={projectId} projectName={projectName} user={user} isSignedIn={isSignedIn} />;
+}
+
+function ContributionFormPage({ projectId, projectName, user, isSignedIn }: { projectId: string | null, projectName: string | null, user: any, isSignedIn: boolean | undefined }) {
   
   const [formData, setFormData] = useState({
     name: "",
@@ -680,5 +685,21 @@ export default function ContributionFormPage() {
         message="Please sign in to submit your contribution and join our community."
       />
     </div>
+  );
+}
+
+// Export with Suspense wrapper
+export default function ContributionForm() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-zinc-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <ContributionFormPageWrapper />
+    </Suspense>
   );
 }
