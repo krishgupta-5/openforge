@@ -577,8 +577,30 @@ export default function AdminIdeasPage() {
                   <h3 className="text-sm font-semibold text-zinc-400 mb-2">Contact Information</h3>
                   <div className="space-y-1 text-zinc-300">
                     <p><strong>Name:</strong> {selectedIdea.name}</p>
-                    <p><strong>GitHub:</strong> {selectedIdea.github}</p>
-                    {selectedIdea.linkedin && <p><strong>LinkedIn:</strong> {selectedIdea.linkedin}</p>}
+                    <p>
+                      <strong>GitHub:</strong>{' '}
+                      <a 
+                        href={`https://github.com/${selectedIdea.github}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-zinc-200 hover:text-white hover:underline transition-colors"
+                      >
+                        {selectedIdea.github}
+                      </a>
+                    </p>
+                    {selectedIdea.linkedin && (
+                      <p>
+                        <strong>LinkedIn:</strong>{' '}
+                        <a 
+                          href={`https://linkedin.com/in/${selectedIdea.linkedin}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-zinc-200 hover:text-white hover:underline transition-colors"
+                        >
+                          {selectedIdea.linkedin}
+                        </a>
+                      </p>
+                    )}
                     {selectedIdea.mobile && <p><strong>Mobile:</strong> {selectedIdea.mobile}</p>}
                   </div>
                 </div>

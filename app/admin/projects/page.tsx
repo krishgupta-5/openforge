@@ -25,7 +25,9 @@ import {
   Layers,
   Activity,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  Linkedin,
+  Phone
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -697,8 +699,39 @@ export default function AdminProjects() {
                       </div>
                       <div className="flex items-center gap-3 text-sm">
                         <Github className="w-4 h-4 text-zinc-500" />
-                        <span className="text-zinc-200">{selectedContribution.github}</span>
+                        <a 
+                          href={`https://github.com/${selectedContribution.github}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-zinc-200 hover:text-white hover:underline transition-colors"
+                        >
+                          {selectedContribution.github}
+                        </a>
                       </div>
+                      {selectedContribution.linkedin && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <Linkedin className="w-4 h-4 text-zinc-500" />
+                          <a 
+                            href={selectedContribution.linkedin.includes('linkedin.com') ? selectedContribution.linkedin : `https://linkedin.com/in/${selectedContribution.linkedin}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-zinc-200 hover:text-white hover:underline transition-colors"
+                          >
+                            {selectedContribution.linkedin.includes('linkedin.com') ? selectedContribution.linkedin.split('/in/')[1] || selectedContribution.linkedin : selectedContribution.linkedin}
+                          </a>
+                        </div>
+                      )}
+                      {selectedContribution.mobile && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <Phone className="w-4 h-4 text-zinc-500" />
+                          <a 
+                            href={`tel:${selectedContribution.mobile}`}
+                            className="text-zinc-200 hover:text-white hover:underline transition-colors"
+                          >
+                            {selectedContribution.mobile}
+                          </a>
+                        </div>
+                      )}
                       {selectedContribution.prLink && (
                         <div className="flex items-center gap-3 text-sm pt-2 mt-2 border-t border-zinc-800/50">
                           <GitPullRequest className="w-4 h-4 text-emerald-500" />
