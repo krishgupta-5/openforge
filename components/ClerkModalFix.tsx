@@ -50,8 +50,14 @@ export default function ClerkModalFix() {
 
     // Function to position user dropdown to the right
     const positionUserDropdown = () => {
-      // Find user dropdown/popover elements
-      const dropdowns = document.querySelectorAll('[data-clerk-popover], [role="menu"], div[style*="position: absolute"]');
+      // Find user dropdown/popover elements - try multiple selectors
+      const dropdowns = document.querySelectorAll([
+        '[data-clerk-popover]',
+        '[role="menu"]',
+        'div[style*="position: absolute"]',
+        '[data-clerk-user-button] + div',
+        '.clerk-user-button-popover'
+      ].join(', '));
       
       dropdowns.forEach((dropdown) => {
         const element = dropdown as HTMLElement;
@@ -59,9 +65,18 @@ export default function ClerkModalFix() {
         // Check if this is a user dropdown (not a modal)
         const isUserDropdown = element.closest('[data-clerk-user-button]') || 
                                element.getAttribute('role') === 'menu' ||
-                               element.querySelector('[data-clerk-user-button]');
+                               element.querySelector('[data-clerk-user-button]') ||
+                               element.innerHTML.includes('Manage account') ||
+                               element.innerHTML.includes('Sign out');
         
-        if (isUserDropdown && element.style.position === 'absolute') {
+        // Also check if it's positioned near the right side (indicating it's a user dropdown)
+        const computedStyle = window.getComputedStyle(element);
+        const isRightAligned = computedStyle.right === '0px' || 
+                               computedStyle.right === 'auto' && 
+                               parseInt(computedStyle.left || '0') > window.innerWidth / 2;
+        
+        if ((isUserDropdown || isRightAligned) && 
+            (element.style.position === 'absolute' || element.style.position === 'fixed')) {
           // Position to the right side of the viewport
           element.style.position = 'fixed';
           element.style.right = '1rem';
@@ -69,6 +84,7 @@ export default function ClerkModalFix() {
           element.style.left = 'auto';
           element.style.transform = 'none';
           element.style.zIndex = '999999';
+          element.style.maxWidth = '300px';
         }
       });
     };

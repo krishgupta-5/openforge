@@ -192,12 +192,74 @@ body {
 }
 
 /* ---------------------------------------
-   ✅ CLERK USER DROPDOWN (ANCHOR TO AVATAR)
+   ✅ CLERK USER DROPDOWN (ANCHOR TO AVATAR) - DESKTOP ONLY
 --------------------------------------- */
 
-[data-clerk-popover] {
-  z-index: 999999 !important;
-  backdrop-filter: blur(12px);
-  background: oklch(0.208 0.042 265.755 / 90%);
-  border: 1px solid oklch(1 0 0 / 10%);
+/* Target only desktop UserButton (not in mobile menu) */
+@media (min-width: 768px) {
+  [data-clerk-popover] {
+    z-index: 999999 !important;
+    backdrop-filter: blur(12px);
+    background: oklch(0.208 0.042 265.755 / 90%);
+    border: 1px solid oklch(1 0 0 / 10%);
+    position: fixed !important;
+    right: 16.5rem !important;
+    top: 5rem !important;
+    left: auto !important;
+    transform: none !important;
+    max-width: 300px !important;
+  }
+
+  /* More specific Clerk popover selectors - desktop only */
+  .cl-userButtonPopoverCard {
+    position: fixed !important;
+    right: 16.5rem !important;
+    top: 5rem !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 999999 !important;
+    max-width: 300px !important;
+  }
+
+  .cl-userButton-popover {
+    position: fixed !important;
+    right: 16.5rem !important;
+    top: 5rem !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 999999 !important;
+    max-width: 300px !important;
+  }
+
+  .cl-popoverBox {
+    position: fixed !important;
+    right: 16.5rem !important;
+    top: 5rem !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 999999 !important;
+    max-width: 300px !important;
+  }
+
+  /* Additional selectors for Clerk dropdown - desktop only */
+  div[role="menu"][style*="position: absolute"] {
+    position: fixed !important;
+    right: 16.5rem !important;
+    top: 5rem !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 999999 !important;
+    max-width: 300px !important;
+  }
+
+  /* Target any dropdown that contains user menu items - desktop only */
+  div[style*="position: absolute"]:has(a[href*="manage-account"]) {
+    position: fixed !important;
+    right: 16.5rem !important;
+    top: 5rem !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 999999 !important;
+    max-width: 300px !important;
+  }
 }

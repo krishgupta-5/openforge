@@ -35,25 +35,16 @@ export default function Navbar() {
             <NavLink href="/ideas">Ideas</NavLink>
             <NavLink href="/contribute">Contribute</NavLink>
             <NavLink href="/about">About</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
           </div>
 
           {/* --- RIGHT: ACTIONS --- */}
           <div className="flex items-center gap-3">
             <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-xs font-medium text-neutral-300 hover:text-white transition-colors px-2 focus:outline-none">
-                  Log In
-                </button>
-              </SignInButton>
-
-              <div className="w-px h-4 bg-white/10 mx-1"></div>
-
-              <SignUpButton mode="modal">
+              <Link href="/sign-up">
                 <button className="text-xs font-bold text-white hover:text-white/80 transition-colors bg-white/10 px-4 py-1.5 rounded-full border border-white/5 hover:bg-white/20 focus:outline-none">
-                  Join
+                  Get Started
                 </button>
-              </SignUpButton>
+              </Link>
             </SignedOut>
 
             <SignedIn>
@@ -109,47 +100,21 @@ export default function Navbar() {
                 <MobileNavLink href="/about" onClick={() => setIsMobileMenuOpen(false)}>
                   About
                 </MobileNavLink>
-                <MobileNavLink href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-                  Contact
-                </MobileNavLink>
               </div>
               
               <div className="mt-8 pt-8 border-t border-white/10">
                 <SignedOut>
                   <div className="flex flex-col gap-3">
-                    <SignInButton mode="modal">
-                      <button 
-                        className="w-full text-xs font-medium text-neutral-300 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 focus:outline-none text-left"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Log In
-                      </button>
-                    </SignInButton>
-                    
-                    <SignUpButton mode="modal">
+                    <Link href="/sign-up">
                       <button 
                         className="w-full text-xs font-bold text-white hover:text-white/80 transition-colors bg-white/10 px-4 py-2 rounded-lg border border-white/5 hover:bg-white/20 focus:outline-none text-left"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        Join
+                        Get Started
                       </button>
-                    </SignUpButton>
+                    </Link>
                   </div>
                 </SignedOut>
-                
-                <SignedIn>
-                  <div className="flex items-center gap-3 px-4 py-2">
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox:
-                            "w-8 h-8 ring-1 ring-white/10 hover:ring-white/30 transition-all",
-                        },
-                      }}
-                    />
-                    <span className="text-sm text-white/80">Account</span>
-                  </div>
-                </SignedIn>
               </div>
             </div>
           </div>
