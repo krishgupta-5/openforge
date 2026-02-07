@@ -228,6 +228,33 @@ export default function ShareIdeaPage() {
           </div>
         )}
 
+        {/* --- Notification Info --- */}
+        <div className="mb-10 p-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-xl shadow-lg shadow-blue-500/5">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 mt-0.5 border border-blue-500/30">
+              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                📧 We'll Notify You When Partners Are Found
+              </p>
+              <p className="text-sm text-zinc-300 leading-relaxed">
+                Once your idea is approved, we'll actively match you with potential collaborators. 
+                <span className="text-blue-400 font-medium"> You'll receive email notifications as soon as we find suitable partners</span> for your project, 
+                so you won't have to worry about your idea being overlooked.
+              </p>
+              <div className="mt-3 flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 px-3 py-2 rounded-lg border border-blue-500/20">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <span>No need to keep checking back - we'll email you when there are updates!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* --- Form --- */}
         <form onSubmit={handleSubmit} className="space-y-12">
 

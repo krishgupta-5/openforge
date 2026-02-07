@@ -12,7 +12,7 @@ import {
   Users,
   Briefcase,
   Activity,
-  Linkedin, // Added Linkedin Icon
+  Linkedin,
 } from "lucide-react";
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
@@ -39,7 +39,7 @@ const StatCard = ({
   value: string;
   highlight?: boolean;
 }) => (
-  <div className="flex flex-col justify-center px-3 py-2.5 rounded-lg bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 hover:bg-zinc-900/60 transition-all group">
+  <div className="flex flex-col justify-center px-3 py-2.5 rounded-lg bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 hover:bg-zinc-900/60 transition-all group w-full">
     <div className="flex items-center gap-2 mb-1">
       <Icon
         className={`w-3.5 h-3.5 ${highlight ? "text-emerald-400" : "text-zinc-500 group-hover:text-zinc-400"}`}
@@ -49,7 +49,7 @@ const StatCard = ({
       </span>
     </div>
     <span
-      className={`text-sm font-semibold ${highlight ? "text-white" : "text-zinc-200"}`}
+      className={`text-sm font-semibold truncate ${highlight ? "text-white" : "text-zinc-200"}`}
     >
       {value}
     </span>
@@ -76,18 +76,18 @@ const ContributorProfileCard = ({
     : "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
 
   return (
-    <div className="group flex flex-col justify-between p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 hover:bg-zinc-900/80 transition-all duration-300">
+    <div className="group flex flex-col justify-between p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 hover:bg-zinc-900/80 transition-all duration-300 w-full">
       <div className="flex items-center gap-3">
         {/* User Avatar Placeholder */}
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center border ${iconColorClass}`}
+          className={`w-10 h-10 rounded-full flex flex-shrink-0 items-center justify-center border ${iconColorClass}`}
         >
           <User
             className={`w-5 h-5 ${isIdea ? "text-yellow-500" : "text-emerald-500"}`}
           />
         </div>
-        <div className="flex flex-col">
-          <span className="font-semibold text-zinc-200 text-sm group-hover:text-white transition-colors">
+        <div className="flex flex-col overflow-hidden">
+          <span className="font-semibold text-zinc-200 text-sm group-hover:text-white transition-colors truncate">
             {name}
           </span>
           <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wide">
@@ -188,8 +188,8 @@ export default function ProjectDetailPage({
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center gap-4">
-        <h1 className="text-xl font-bold">Project Not Found</h1>
+      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center gap-4 px-4">
+        <h1 className="text-xl font-bold text-center">Project Not Found</h1>
         <Link
           href="/projects"
           className="text-zinc-400 hover:text-white underline underline-offset-4 text-sm"
@@ -210,18 +210,20 @@ export default function ProjectDetailPage({
 
   // Compact prose styling
   const proseClasses = `
-    prose prose-invert max-w-none
+    prose prose-invert max-w-none w-full
     prose-headings:text-white prose-headings:font-bold prose-headings:mb-3 prose-headings:text-xl
     prose-p:text-zinc-400 prose-p:leading-relaxed prose-p:font-normal prose-p:text-base prose-p:my-4
     prose-strong:text-white prose-strong:font-semibold
     prose-ul:text-zinc-400 prose-li:marker:text-zinc-600
     prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+    break-words
   `;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-white/20 pb-20">
+    // FIX 1: Added overflow-x-hidden and w-full to prevent horizontal scrolling on mobile
+    <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-white/20 pb-20 w-full overflow-x-hidden">
       {/* Top Navigation */}
-      <div className="max-w-4xl mx-auto px-6 pt-20 pb-6">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-20 pb-6">
         <Link
           href="/projects"
           className="group inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-white transition-colors"
@@ -233,16 +235,16 @@ export default function ProjectDetailPage({
         </Link>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-4xl mx-auto px-4 md:px-6">
         {/* ================= HERO SECTION (Compact) ================= */}
 
-        {/* Banner Image - Reduced Height */}
-        <div className="w-full h-[220px] md:h-[300px] rounded-2xl relative overflow-hidden mb-8 border border-white/10 bg-zinc-900 shadow-xl shadow-black/50">
+        {/* Banner Image */}
+        <div className="w-full aspect-video rounded-2xl relative overflow-hidden mb-8 border border-white/10 bg-zinc-900 shadow-xl shadow-black/50">
           {project.mockupImage ? (
             <img
               src={`/mockups/${project.mockupImage}`}
               alt={`${project.title} mockup`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = "none";
@@ -262,14 +264,14 @@ export default function ProjectDetailPage({
           )}
         </div>
 
-        {/* Title & Meta Area - Reduced Spacing */}
+        {/* Title & Meta Area */}
         <div className="flex flex-col gap-4 mb-8 border-b border-zinc-800/50 pb-8">
           {/* Tags */}
           <div className="flex flex-wrap items-center gap-2">
             {project.tags?.slice(0, 3).map((tag: string, i: number) => (
               <span
                 key={i}
-                className="px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 font-medium"
+                className="px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 font-medium whitespace-nowrap"
               >
                 {tag}
               </span>
@@ -309,7 +311,7 @@ export default function ProjectDetailPage({
           </div>
 
           {/* Compact Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 pt-4">
             <button
               onClick={() => {
                 if (!isSignedIn) {
@@ -318,7 +320,7 @@ export default function ProjectDetailPage({
                   window.location.href = `/feature-ideas?projectId=${id}&projectName=${encodeURIComponent(project.title)}`;
                 }
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold hover:from-yellow-500/20 hover:to-orange-500/20 hover:border-yellow-500/40 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-yellow-500/5"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold hover:from-yellow-500/20 hover:to-orange-500/20 hover:border-yellow-500/40 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-yellow-500/5 whitespace-nowrap"
             >
               <Lightbulb className="w-3.5 h-3.5" />
               HAVE AN IDEA?
@@ -332,35 +334,37 @@ export default function ProjectDetailPage({
                   window.location.href = `/contribute-form?projectId=${id}&projectName=${encodeURIComponent(project.title)}`;
                 }
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:from-emerald-500/20 hover:to-green-500/20 hover:border-emerald-500/40 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/5"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:from-emerald-500/20 hover:to-green-500/20 hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-emerald-500/5 whitespace-nowrap"
             >
               <GitPullRequest className="w-3.5 h-3.5" />
               WANT TO CONTRIBUTE?
             </button>
 
-            <div className="w-px h-6 bg-zinc-800 mx-1 hidden sm:block"></div>
+            <div className="hidden sm:block w-px h-6 bg-zinc-800 mx-1"></div>
 
-            {project.liveUrl && (
+            <div className="flex items-center justify-center gap-2 mt-2 sm:mt-0">
+              {project.liveUrl && (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  className="flex items-center gap-1.5 text-xs font-bold text-white hover:text-zinc-300 transition-colors px-3 py-2"
+                >
+                  <Globe className="w-3.5 h-3.5" /> Live Demo
+                </a>
+              )}
               <a
-                href={project.liveUrl}
+                href={project.githubUrl}
                 target="_blank"
-                className="flex items-center gap-1.5 text-xs font-bold text-white hover:text-zinc-300 transition-colors px-3 py-2"
+                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors px-3 py-2"
               >
-                <Globe className="w-3.5 h-3.5" /> Live Demo
+                <Github className="w-3.5 h-3.5" /> Source
               </a>
-            )}
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors px-3 py-2"
-            >
-              <Github className="w-3.5 h-3.5" /> Source
-            </a>
+            </div>
           </div>
         </div>
 
         {/* ================= CONTENT BODY (Compact) ================= */}
-        <div className="max-w-4xl mx-auto space-y-12">
+        <div className="w-full space-y-12">
           {/* Overview */}
           {project.overview && (
             <div>
@@ -402,7 +406,7 @@ export default function ProjectDetailPage({
           ].map(
             (section, idx) =>
               section.content && (
-                <div key={idx}>
+                <div key={idx} className="w-full">
                   <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <span className="text-zinc-700 font-light">#</span>{" "}
                     {section.title}
@@ -414,16 +418,17 @@ export default function ProjectDetailPage({
               ),
           )}
 
-          {/* Features Markdown */}
+          {/* Features Markdown - FIXED: Negative margin handled */}
           {project.features && (
-            <div className="mb-12">
+            <div className="mb-12 w-full">
               <h2 className="text-2xl font-bold text-white mb-4 group flex items-center gap-2 cursor-default">
-                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">
+                {/* FIX 2: Hidden on mobile to prevent overflow, visible on desktop */}
+                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block md:-ml-6">
                   #
                 </span>{" "}
                 Features
               </h2>
-              <div className="text-zinc-400 leading-relaxed prose prose-invert prose-li:marker:text-white pl-8">
+              <div className="text-zinc-400 leading-relaxed prose prose-invert prose-li:marker:text-white w-full break-words">
                 <MarkdownRenderer content={project.features} />
               </div>
             </div>
@@ -431,9 +436,10 @@ export default function ProjectDetailPage({
 
           {/* Idea Contributors Section - CLEAN GRID */}
           {approvedFeatures.length > 0 && (
-            <div className="mb-12">
+            <div className="mb-12 w-full">
               <h2 className="text-2xl font-bold text-white mb-6 group flex items-center gap-3 cursor-default">
-                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">
+                {/* FIX 3: Hidden on mobile */}
+                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block md:-ml-6">
                   #
                 </span>
                 <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
@@ -441,14 +447,13 @@ export default function ProjectDetailPage({
                 </div>
                 Idea Contributors
               </h2>
-              {/* Changed to Grid Layout for User Profiles */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {approvedFeatures.map((feature) => (
                   <ContributorProfileCard
                     key={feature.id}
                     name={feature.name}
                     github={feature.github}
-                    linkedin={(feature as any).linkedin} // Assuming linkedin property exists or is added to data
+                    linkedin={(feature as any).linkedin}
                     type="idea"
                   />
                 ))}
@@ -458,9 +463,10 @@ export default function ProjectDetailPage({
 
           {/* Contributors Section - CLEAN GRID */}
           {approvedContributions.length > 0 && (
-            <div className="mb-12">
+            <div className="mb-12 w-full">
               <h2 className="text-2xl font-bold text-white mb-6 group flex items-center gap-3 cursor-default">
-                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-6">
+                {/* FIX 4: Hidden on mobile */}
+                <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block md:-ml-6">
                   #
                 </span>
                 <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
@@ -468,7 +474,6 @@ export default function ProjectDetailPage({
                 </div>
                 Contributors
               </h2>
-              {/* Changed to Grid Layout for User Profiles */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {approvedContributions.map((contribution) => (
                   <ContributorProfileCard

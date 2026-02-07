@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   SignedIn,
   SignedOut,
@@ -122,6 +122,8 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useUser();
   const { openUserProfile } = useClerk();
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Prevent scrolling when mobile menu is open
   useEffect(() => {
@@ -141,7 +143,6 @@ export default function Navbar() {
           
           {/* --- LEFT: BRAND --- */}
           <Link href="/" className="flex items-center gap-2 group z-50" onClick={(e) => {
-            const pathname = window.location.pathname;
             if (pathname === "/") {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -210,6 +211,9 @@ export default function Navbar() {
             <MobileNavLink href="/contribute" onClick={() => setIsMobileMenuOpen(false)}>
               Contribute
             </MobileNavLink>
+            <MobileNavLink href="/about" onClick={() => setIsMobileMenuOpen(false)}>
+              About
+            </MobileNavLink>
             
             {/* Request Callback REMOVED */}
 
@@ -259,7 +263,7 @@ export default function Navbar() {
 
             <SignedOut>
                 <Link href="/auth/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
-                  <button className="px-8 py-2.5 bg-[#d95d39] hover:bg-[#c44f2d] text-white text-sm font-medium rounded-md shadow-lg shadow-orange-900/20 transition-all duration-300">
+                  <button className="px-8 py-2.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-full border border-white/5 transition-all duration-300">
                     Sign In
                   </button>
                 </Link>
