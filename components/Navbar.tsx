@@ -86,8 +86,6 @@ function CustomProfileButton() {
 
           {/* Menu Actions */}
           <div className="p-1.5 flex flex-col gap-1">
-            <div className="h-px bg-white/5 my-0.5 mx-2" />
-
             <SignOutButton>
               <button 
                 className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-2.5"
