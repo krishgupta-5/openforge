@@ -7,17 +7,29 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-// --- CONSTANTS ---
-// FOR NOW: Using the specific provided link for all previews
-const TEST_VIDEO_URL = "https://drive.google.com/file/d/1NVrfki6v2C5wxgtNW2cxPKsqyhaUVzNk/view?usp=sharing";
-
 // --- Components ---
 
 // 1. Video Modal Component
 const VideoModal = ({ url, onClose }: { url: string; onClose: () => void }) => {
-  // Logic to convert Google Drive 'view' links to 'preview'
+  // Logic to convert various video URLs to embed URLs
   const getEmbedUrl = (videoUrl: string) => {
     if (!videoUrl) return "";
+    
+    // Check if it's a YouTube link
+    if (videoUrl.includes("youtube.com/watch")) {
+      const videoId = videoUrl.split("v=")[1]?.split("&")[0];
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+    
+    // Check if it's a YouTube short link
+    if (videoUrl.includes("youtu.be/")) {
+      const videoId = videoUrl.split("youtu.be/")[1]?.split("?")[0];
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
     
     // Check if it's a Google Drive link
     if (videoUrl.includes("drive.google.com")) {
@@ -45,7 +57,6 @@ const VideoModal = ({ url, onClose }: { url: string; onClose: () => void }) => {
 
       {/* Video Container */}
       <div className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col animate-in zoom-in-95 duration-300">
-        
         {/* Close Button */}
         <button
           onClick={(e) => {
@@ -60,10 +71,9 @@ const VideoModal = ({ url, onClose }: { url: string; onClose: () => void }) => {
         {/* The Iframe Player */}
         <iframe
           src={getEmbedUrl(url)}
-          className="w-full h-full"
-          allow="autoplay; encrypted-media; fullscreen"
+          className="w-full h-full border-0"
           allowFullScreen
-          title="Project Preview"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         />
       </div>
     </div>
@@ -163,12 +173,14 @@ export default function ProjectsPage() {
   }, []);
 
   // Handler to open video
-  const handleOpenVideo = (e: React.MouseEvent) => {
+  const handleOpenVideo = (e: React.MouseEvent, videoUrl?: string) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // FOR NOW: IGNORE DATABASE URL AND USE PROVIDED LINK
-    setSelectedVideo(TEST_VIDEO_URL);
+    // Use the provided video URL or don't open modal if no URL
+    if (videoUrl) {
+      setSelectedVideo(videoUrl);
+    }
   };
 
   if (loading) {
@@ -249,7 +261,19 @@ export default function ProjectsPage() {
                 {/* --- Image Area / Preview Trigger --- */}
                 <div 
                   className="aspect-video w-full relative overflow-hidden rounded-t-xl bg-[#0A0A0A] cursor-pointer"
-                  onClick={handleOpenVideo} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Check for both videoUrl and videos (plural)
+                    const videoUrl = project.videoUrl || project.videos;
+                    
+                    // Only check for video URL
+                    if (videoUrl) {
+                      // Open video modal directly with video URL
+                      handleOpenVideo(e, videoUrl);
+                    }
+                  }} 
                 >
                   {/* Overlay Button */}
                   <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
@@ -300,8 +324,9 @@ export default function ProjectsPage() {
                     <div className="flex gap-3 text-neutral-500 ml-4 pt-1">
                       {project.liveUrl && (
                         <Globe
-                          className="w-4 h-4 hover:text-white cursor-pointer transition-colors"
+                          className="w-4 h-4 hover:text-white cursor-pointer transition-colors z-30 relative"
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             window.open(project.liveUrl, "_blank");
                           }}
@@ -309,8 +334,9 @@ export default function ProjectsPage() {
                       )}
                       {project.githubUrl && (
                         <Github
-                          className="w-4 h-4 hover:text-white cursor-pointer transition-colors"
+                          className="w-4 h-4 hover:text-white cursor-pointer transition-colors z-30 relative"
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             window.open(project.githubUrl, "_blank");
                           }}

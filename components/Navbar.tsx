@@ -7,16 +7,14 @@ import {
   SignedIn,
   SignedOut,
   useUser,
-  useClerk,
   SignOutButton,
 } from "@clerk/nextjs";
-import { Menu, X, LogOut, User, Settings } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 
 // --- CUSTOM PROFILE BUTTON (DESKTOP ONLY) ---
 function CustomProfileButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoaded } = useUser();
-  const { openUserProfile } = useClerk();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -88,17 +86,6 @@ function CustomProfileButton() {
 
           {/* Menu Actions */}
           <div className="p-1.5 flex flex-col gap-1">
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                openUserProfile();
-              }}
-              className="w-full text-left px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2.5 group"
-            >
-              <Settings className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
-              Manage Account
-            </button>
-
             <div className="h-px bg-white/5 my-0.5 mx-2" />
 
             <SignOutButton>
@@ -121,7 +108,6 @@ function CustomProfileButton() {
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useUser();
-  const { openUserProfile } = useClerk();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -240,14 +226,6 @@ export default function Navbar() {
 
                 {/* Actions */}
                 <div className="w-full flex flex-col gap-2">
-                   <button 
-                      onClick={() => { openUserProfile(); setIsMobileMenuOpen(false); }}
-                      className="w-full py-2.5 flex items-center justify-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-sm font-medium rounded-lg transition-colors"
-                   >
-                      <Settings className="w-4 h-4" />
-                      Manage Account
-                   </button>
-                   
                    <SignOutButton>
                       <button 
                         onClick={() => setIsMobileMenuOpen(false)}

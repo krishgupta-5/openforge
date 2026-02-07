@@ -197,7 +197,7 @@ body {
 
 /* Target only desktop UserButton (not in mobile menu) */
 @media (min-width: 768px) {
-  [data-clerk-popover] {
+  [data-clerk-popover]:not(:has([data-clerk-user-profile])):not(:has(.cl-userProfile-root)) {
     z-index: 999999 !important;
     backdrop-filter: blur(12px);
     background: oklch(0.208 0.042 265.755 / 90%);
@@ -211,7 +211,7 @@ body {
   }
 
   /* More specific Clerk popover selectors - desktop only */
-  .cl-userButtonPopoverCard {
+  .cl-userButtonPopoverCard:not(:has([data-clerk-user-profile])):not(:has(.cl-userProfile-root)) {
     position: fixed !important;
     right: 16.5rem !important;
     top: 5rem !important;
@@ -221,7 +221,7 @@ body {
     max-width: 300px !important;
   }
 
-  .cl-userButton-popover {
+  .cl-userButton-popover:not(:has([data-clerk-user-profile])):not(:has(.cl-userProfile-root)) {
     position: fixed !important;
     right: 16.5rem !important;
     top: 5rem !important;
@@ -231,7 +231,7 @@ body {
     max-width: 300px !important;
   }
 
-  .cl-popoverBox {
+  .cl-popoverBox:not(:has([data-clerk-user-profile])):not(:has(.cl-userProfile-root)) {
     position: fixed !important;
     right: 16.5rem !important;
     top: 5rem !important;
@@ -242,7 +242,7 @@ body {
   }
 
   /* Additional selectors for Clerk dropdown - desktop only */
-  div[role="menu"][style*="position: absolute"] {
+  div[role="menu"][style*="position: absolute"]:not(:has([data-clerk-user-profile])):not(:has(.cl-userProfile-root)) {
     position: fixed !important;
     right: 16.5rem !important;
     top: 5rem !important;
@@ -253,7 +253,7 @@ body {
   }
 
   /* Target any dropdown that contains user menu items - desktop only */
-  div[style*="position: absolute"]:has(a[href*="manage-account"]) {
+  div[style*="position: absolute"]:has(a[href*="manage-account"]):not(:has([data-clerk-user-profile])):not(:has(.cl-userProfile-root)) {
     position: fixed !important;
     right: 16.5rem !important;
     top: 5rem !important;
@@ -261,5 +261,17 @@ body {
     transform: none !important;
     z-index: 999999 !important;
     max-width: 300px !important;
+  }
+
+  /* Explicitly exclude manage account modal content from being repositioned */
+  [data-clerk-user-profile] *,
+  .cl-userProfile-root *,
+  [class*="userProfile"] * {
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
   }
 }

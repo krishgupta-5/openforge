@@ -8,6 +8,7 @@ import { isAdmin } from "@/lib/isAdmin";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import MarkdownEditor from "@/components/MarkdownEditor";
+import { Play } from "lucide-react";
 
 export default function NewProject() {
   const { user } = useUser();
@@ -31,10 +32,14 @@ export default function NewProject() {
             Object.keys(doc.data()).forEach(key => allFields.add(key));
           });
           
+          // Always include videoUrl and previewImages in available fields
+          allFields.add("videoUrl");
+          allFields.add("previewImages");
+          
           // Define logical order for fields
           const fieldOrder = [
             "title", "shortDescription", "status", "timeline", "role", "team", 
-            "technologies", "techStack", "githubUrl", "liveUrl", "mockupImage", "overview", 
+            "technologies", "techStack", "githubUrl", "liveUrl", "previewImages", "videoUrl", "mockupImage", "overview", 
             "features", "whatUsersCanDo", "whyIBuiltThis", "impact", 
             "futurePlans"
           ];
@@ -53,30 +58,19 @@ export default function NewProject() {
           });
           setForm(initialForm);
         } else {
-          // If no projects exist, show fields in logical order
-          const orderedFields = [
-            "title", 
-            "shortDescription", 
-            "status", 
-            "timeline", 
-            "role", 
-            "team", 
-            "technologies", 
-            "techStack", 
-            "githubUrl", 
-            "liveUrl", 
-            "mockupImage",
-            "overview",
-            "features",
-            "whatUsersCanDo",
-            "whyIBuiltThis",
-            "impact",
+          // No existing projects, use default fields
+          const defaultFields = [
+            "title", "shortDescription", "status", "timeline", "role", "team", 
+            "technologies", "techStack", "githubUrl", "liveUrl", "previewImages", "videoUrl", "mockupImage", "overview", 
+            "features", "whatUsersCanDo", "whyIBuiltThis", "impact", 
             "futurePlans"
           ];
-          setAvailableFields(orderedFields);
+          setAvailableFields(defaultFields);
+          
+          // Initialize form with empty values for default fields
           const initialForm: any = {};
-          orderedFields.forEach(field => {
-            initialForm[field] = field === "status" ? "Open for Contributions" : "";
+          defaultFields.forEach(field => {
+            initialForm[field] = "";
           });
           setForm(initialForm);
         }
@@ -274,6 +268,77 @@ export default function NewProject() {
                       <p className="text-xs text-zinc-500 mt-2">
                         Live demo URL (optional)
                       </p>
+                    </div>
+                  ) : key === "previewImages" ? (
+                    <div className="space-y-3">
+                      <textarea
+                        placeholder="image1.jpg,image2.png,screenshot.png"
+                        className="w-full px-4 py-3 bg-neutral-900/50 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-white/20 transition-colors resize-none"
+                        rows={3}
+                        value={form[key] || ""}
+                        onChange={(e) =>
+                          setForm({ ...form, [key]: e.target.value })
+                        }
+                      />
+                      <p className="text-xs text-zinc-500">
+                        Enter preview images separated by commas. Place image files in /public/previews/ folder. Supported formats: jpg, png, gif.
+                      </p>
+                      {form[key] && (
+                        <div className="mt-3 p-3 bg-neutral-900/30 border border-white/5 rounded-lg">
+                          <p className="text-xs text-zinc-400 mb-2">Preview:</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {form[key].split(',').map((file: string, index: number) => {
+                              const filename = file.trim();
+                              if (!filename) return null;
+                              return (
+                                <div key={index} className="relative group">
+                                  <img 
+                                    src={`/previews/${filename}`} 
+                                    alt={`Preview ${index + 1}`} 
+                                    className="w-full h-20 object-cover rounded border border-white/10"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                                    <span className="text-xs text-white truncate px-1">{filename}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : key === "videoUrl" ? (
+                    <div className="space-y-3">
+                      <input
+                        type="url"
+                        placeholder="https://drive.google.com/file/d/xyz/view?usp=sharing"
+                        className="w-full px-4 py-3 bg-neutral-900/50 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-white/20 transition-colors"
+                        value={form[key] || ""}
+                        onChange={(e) =>
+                          setForm({ ...form, [key]: e.target.value })
+                        }
+                      />
+                      <p className="text-xs text-zinc-500">
+                        Enter video URL (YouTube, Google Drive). This video will play when users tap on preview.
+                      </p>
+                      {form[key] && (
+                        <div className="mt-3 p-3 bg-neutral-900/30 border border-white/5 rounded-lg">
+                          <p className="text-xs text-zinc-400 mb-2">Video Preview:</p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-16 bg-black/50 rounded flex items-center justify-center">
+                              <Play className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs text-white truncate">{form[key]}</p>
+                              <p className="text-xs text-zinc-400">Click to play video</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : key === "mockupImage" ? (
                     <div className="space-y-3">

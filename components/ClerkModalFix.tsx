@@ -64,6 +64,16 @@ export default function ClerkModalFix() {
       dropdowns.forEach((dropdown) => {
         const element = dropdown as HTMLElement;
         
+        // Skip if this is inside the Clerk user profile modal (manage account)
+        const isInUserProfile = element.closest('[data-clerk-user-profile]') ||
+                               element.closest('[data-clerk-modal]') ||
+                               element.closest('.cl-userProfile-root') ||
+                               element.closest('[class*="userProfile"]');
+        
+        if (isInUserProfile) {
+          return; // Don't modify elements inside the user profile modal
+        }
+        
         // Check if this is a user dropdown (not a modal)
         const isUserDropdown = element.closest('[data-clerk-user-button]') || 
                                element.getAttribute('role') === 'menu' ||
@@ -83,8 +93,15 @@ export default function ClerkModalFix() {
                               element.innerHTML.includes('Sign out') ||
                               element.querySelector('[data-clerk-navigation-link]');
         
+        // Additional check: Skip if this looks like it's part of the manage account interface
+        const isManageAccountInterface = element.innerHTML.includes('Delete account') ||
+                                         element.innerHTML.includes('Personal information') ||
+                                         element.innerHTML.includes('Security') ||
+                                         element.querySelector('[data-clerk-tab-button]');
+        
         if ((isUserDropdown || isRightAligned || hasUserContent) && 
-            (element.style.position === 'absolute' || element.style.position === 'fixed')) {
+            (element.style.position === 'absolute' || element.style.position === 'fixed') &&
+            !isManageAccountInterface) {
           // Position to the right side of the viewport
           element.style.position = 'fixed';
           element.style.right = '1rem';

@@ -13,6 +13,10 @@ import {
   Briefcase,
   Activity,
   Linkedin,
+  X,
+  Play,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
@@ -152,6 +156,8 @@ export default function ProjectDetailPage({
   >([]);
   const [loading, setLoading] = useState(true);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const { openSignIn } = useClerk();
 
   useEffect(() => {
@@ -207,6 +213,62 @@ export default function ProjectDetailPage({
       : Array.isArray(project.techStack)
         ? project.techStack
         : [];
+
+  // Helper for preview images/videos
+  const previewFiles = project.previewImages 
+    ? project.previewImages.split(',').map((file: string) => file.trim()).filter((file: string) => file)
+    : [];
+
+  const hasVideoUrl = (project.videoUrl || project.videos) && (project.videoUrl || project.videos).trim() !== '';
+  const videoUrl = project.videoUrl || project.videos;
+
+  const openPreviewModal = () => {
+    setCurrentPreviewIndex(0);
+    setShowPreviewModal(true);
+  };
+
+  const navigatePreview = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setCurrentPreviewIndex((prev) => (prev === 0 ? previewFiles.length - 1 : prev - 1));
+    } else {
+      setCurrentPreviewIndex((prev) => (prev === previewFiles.length - 1 ? 0 : prev + 1));
+    }
+  };
+
+  const isVideoFile = (filename: string) => {
+    return /\.(mp4|webm|mov)$/i.test(filename);
+  };
+
+  const isYouTubeUrl = (url: string) => {
+    return url.includes('youtube.com/watch') || url.includes('youtu.be/');
+  };
+  
+  const isGoogleDriveUrl = (url: string) => {
+    return url.includes('drive.google.com');
+  };
+  
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (url.includes("youtube.com/watch")) {
+      const videoId = url.split("v=")[1]?.split("&")[0];
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+
+    if (url.includes("youtu.be/")) {
+      const videoId = url.split("youtu.be/")[1]?.split("?")[0];
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+
+    return url;
+  };
+  
+  const getGoogleDriveEmbedUrl = (url: string) => {
+    // Replace /view or /view?usp=sharing with /preview
+    return url.replace(/\/view.*/, "/preview");
+  };
 
   // Compact prose styling
   const proseClasses = `
@@ -343,14 +405,22 @@ export default function ProjectDetailPage({
             <div className="hidden sm:block w-px h-6 bg-zinc-800 mx-1"></div>
 
             <div className="flex items-center justify-center gap-2 mt-2 sm:mt-0">
-              {project.liveUrl && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
+              {(project.liveUrl || hasVideoUrl) && (
+                <button
+                  onClick={() => {
+                    if (hasVideoUrl) {
+                      // Open video modal directly with video URL
+                      setCurrentPreviewIndex(0);
+                      setShowPreviewModal(true);
+                    } else if (project.liveUrl) {
+                      window.open(project.liveUrl, '_blank');
+                    }
+                  }}
                   className="flex items-center gap-1.5 text-xs font-bold text-white hover:text-zinc-300 transition-colors px-3 py-2"
                 >
-                  <Globe className="w-3.5 h-3.5" /> Live Demo
-                </a>
+                  <Globe className="w-3.5 h-3.5" /> 
+                  {hasVideoUrl ? 'Play Video' : 'Live Demo'}
+                </button>
               )}
               <a
                 href={project.githubUrl}
@@ -505,6 +575,67 @@ export default function ProjectDetailPage({
         onClose={() => setShowLoginPopup(false)}
         message="Please sign in to submit ideas or contribute to this project."
       />
+
+      {/* Preview Modal */}
+      {showPreviewModal && hasVideoUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white text-lg font-semibold">
+                Video Preview
+              </h3>
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex items-center justify-center relative bg-black/20 rounded-lg overflow-hidden">
+              {isYouTubeUrl(videoUrl) ? (
+                <iframe
+                  src={getYouTubeEmbedUrl(videoUrl)}
+                  className="w-full h-full max-w-full max-h-full object-contain"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : isGoogleDriveUrl(videoUrl) ? (
+                <iframe
+                  src={getGoogleDriveEmbedUrl(videoUrl)}
+                  className="w-full h-full max-w-full max-h-full object-contain"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : (
+                <video
+                  src={videoUrl}
+                  className="max-w-full max-h-full object-contain"
+                  controls
+                  autoPlay
+                />
+              )}
+            </div>
+
+            {/* External link */}
+            {project.liveUrl && (
+              <div className="flex justify-center mt-4">
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white text-sm"
+                >
+                  <Globe className="w-4 h-4" />
+                  Visit Live Site
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
