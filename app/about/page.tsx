@@ -278,8 +278,9 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CreatorCard
               name="Sahil Mishra"
-              role="Build Stuff & Break Stuff"
-              desc="Part of the team figuring things out together — building, experimenting, breaking things, and fixing them again. Here to learn in public and make open source feel less scary."
+              role="Developer"
+              desc="A developer who enjoys building things from scratch, experimenting in public, and learning as he goes. Focused on making open source more approachable and creating spaces where developers can build and grow together.
+"
               icon={<Code className="w-6 h-6" />}
               linkedin="https://www.linkedin.com/in/sahilmishra03/"
               email="sahilmishra03032005@gmail.com"
@@ -287,8 +288,9 @@ export default function AboutPage() {
 
             <CreatorCard
               name="Krish Gupta"
-              role="Makes Things Work Somehow"
-              desc="Part of the team making sure things don't fall apart (most of the time). Enjoys collaborating, learning by doing, and building useful things with the community."
+              role="Developer"
+              desc="A developer who enjoys solving problems, refining ideas, and learning by building. Focused on improving projects through collaboration and contributing to open source in a practical way.
+"
               icon={<Cpu className="w-6 h-6" />}
               linkedin="https://www.linkedin.com/in/krishgupta5/"
               email="krishgupta0072@gmail.com"
