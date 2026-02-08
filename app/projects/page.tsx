@@ -205,6 +205,13 @@ const TechIcon = ({ name }: { name: string }) => {
           />
         </div>
       )}
+      {/* Custom tooltip */}
+      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/90 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover/icon:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/10">
+        {name}
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+          <div className="w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black/90"></div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -344,10 +351,10 @@ export default function ProjectsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project, index) => {
+          {filteredProjects.map((project) => {
             return (
               <div
-                key={index}
+                key={project.id}
                 className="group flex flex-col bg-[#0A0A0A] border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors duration-200"
               >
                 {/* IMAGE CONTAINER
@@ -434,7 +441,7 @@ export default function ProjectsPage() {
                   </p>
 
                   <div className="mt-auto pt-3 flex flex-col gap-3 border-t border-white/5">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap max-h-12 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
                       {(() => {
                         const techArray = Array.isArray(project.technologies)
                           ? project.technologies
@@ -443,11 +450,9 @@ export default function ProjectsPage() {
                                 .split(",")
                                 .map((t: string) => t.trim())
                             : [];
-                        return techArray
-                          .slice(0, 6)
-                          .map((tech: string, i: number) => (
-                            <TechIcon key={i} name={tech} />
-                          ));
+                        return techArray.map((tech: string, i: number) => (
+                          <TechIcon key={`${tech}-${i}`} name={tech} />
+                        ));
                       })()}
                     </div>
 

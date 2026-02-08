@@ -317,8 +317,8 @@ export default function AdminProjects() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {projects.map((p) => (
-                  <div key={p.id} className="group bg-zinc-900/30 border border-white/5 rounded-xl overflow-hidden hover:border-zinc-700/50 hover:bg-zinc-900/50 transition-all duration-300 shadow-sm">
+                {projects.map((p, index) => (
+                  <div key={p.id || `project-${index}`} className="group bg-zinc-900/30 border border-white/5 rounded-xl overflow-hidden hover:border-zinc-700/50 hover:bg-zinc-900/50 transition-all duration-300 shadow-sm">
                     <div className="p-6">
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div className="flex-1 space-y-3">
@@ -416,8 +416,8 @@ export default function AdminProjects() {
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredFeatures.map((feature) => (
-                  <div key={feature.id} className="group bg-zinc-900/30 border border-white/5 rounded-xl p-5 hover:border-zinc-700/50 hover:bg-zinc-900/40 transition-all duration-200">
+                {filteredFeatures.map((feature, index) => (
+                  <div key={feature.id || `feature-${index}`} className="group bg-zinc-900/30 border border-white/5 rounded-xl p-5 hover:border-zinc-700/50 hover:bg-zinc-900/40 transition-all duration-200">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
@@ -539,8 +539,8 @@ export default function AdminProjects() {
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredContributions.map((contribution) => (
-                  <div key={contribution.id} className="group bg-zinc-900/30 border border-white/5 rounded-xl p-5 hover:border-zinc-700/50 hover:bg-zinc-900/40 transition-all duration-200">
+                {filteredContributions.map((contribution, index) => (
+                  <div key={contribution.id || `contribution-${index}`} className="group bg-zinc-900/30 border border-white/5 rounded-xl p-5 hover:border-zinc-700/50 hover:bg-zinc-900/40 transition-all duration-200">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
