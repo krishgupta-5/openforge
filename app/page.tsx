@@ -66,7 +66,7 @@ export default function LandingPage() {
             </button>
 
             <Link 
-                href="/community" 
+                href="https://chat.whatsapp.com/LiVK87vB8rQL5QBC0yrRbT?mode=gi_t" 
                 className="px-6 py-3 min-w-[140px] rounded-md font-medium text-sm bg-zinc-900 text-white border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-500 hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.1)] transition-all flex items-center justify-center gap-2"
             >
                 <Users className="w-4 h-4 text-zinc-400" />

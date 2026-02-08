@@ -7,6 +7,7 @@ import './globals.css'
 import Navbar from "@/components/Navbar"
 import SyncUser from "@/components/SyncUser"
 import ClerkModalFix from "@/components/ClerkModalFix"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: 'OpenForge',
@@ -67,6 +68,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <ClerkModalFix />
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
