@@ -11,10 +11,11 @@ import {
   Globe,
   Heart,
   ArrowRight,
-  Terminal,
-  Cpu,
   Layers,
   Sparkles,
+  Cpu,
+  Linkedin,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -53,18 +54,23 @@ const FeatureCard = ({
   </div>
 );
 
+// --- UPDATED CREATOR CARD ---
 const CreatorCard = ({
   name,
   role,
   desc,
   icon,
+  linkedin,
+  email,
 }: {
   name: string;
   role: string;
   desc: string;
   icon: React.ReactNode;
+  linkedin?: string;
+  email?: string;
 }) => (
-  <div className="group p-6 bg-[#09090b] border border-zinc-800 rounded-xl hover:border-zinc-600 transition-all duration-300 h-full">
+  <div className="group p-6 bg-[#09090b] border border-zinc-800 rounded-xl hover:border-zinc-600 transition-all duration-300 h-full flex flex-col">
     <div className="flex items-center gap-4 mb-4">
       <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 group-hover:scale-105 transition-transform text-zinc-300 group-hover:text-white shrink-0">
         {icon}
@@ -76,7 +82,40 @@ const CreatorCard = ({
         </p>
       </div>
     </div>
-    <p className="text-sm text-zinc-400 leading-relaxed">{desc}</p>
+    <p className="text-sm text-zinc-400 leading-relaxed mb-6 flex-grow">
+      {desc}
+    </p>
+
+    {/* Social Links Section */}
+    <div className="pt-4 border-t border-zinc-800 flex items-center gap-3">
+      <span className="text-xs font-medium text-zinc-500">Connect:</span>
+      
+      {/* LinkedIn Link (HTTPS) */}
+      {linkedin && (
+        <a
+          href={linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-blue-500 hover:bg-blue-500/10 transition-colors"
+        >
+          <Linkedin className="w-4 h-4" />
+        </a>
+      )}
+
+      {/* Gmail Link (Fixed: Uses /u/0/ to target default account) */}
+      {email && (
+        <a
+          // Matches the structure you provided: mail.google.com/mail/u/0/...
+          // view=cm ensures the Compose window opens with the 'to' address filled
+          href={`https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${email}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <Mail className="w-4 h-4" />
+        </a>
+      )}
+    </div>
   </div>
 );
 
@@ -176,7 +215,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* --- 4. Why We Built This (Problem/Solution) --- */}
+        {/* --- 4. Why We Built This --- */}
         <div className="mb-24">
           <SectionHeading
             title="Why We Built This"
@@ -184,7 +223,6 @@ export default function AboutPage() {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Problem */}
             <div className="p-8 border border-red-900/20 bg-red-900/5 rounded-xl">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-red-500 rounded-full" /> The
@@ -204,16 +242,9 @@ export default function AboutPage() {
                   </span>
                   .
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                  Open-source feels{" "}
-                  <span className="text-zinc-200 font-medium">complex</span> for
-                  beginners.
-                </li>
               </ul>
             </div>
 
-            {/* Solution */}
             <div className="p-8 border border-emerald-900/20 bg-emerald-900/5 rounded-xl">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-emerald-500 rounded-full" /> The
@@ -229,12 +260,6 @@ export default function AboutPage() {
                   <li className="flex items-center gap-3">
                     <Sparkles className="w-4 h-4 text-emerald-500" />
                     <span className="text-white">
-                      Contributors become teammates
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Sparkles className="w-4 h-4 text-emerald-500" />
-                    <span className="text-white">
                       Teammates build real projects
                     </span>
                   </li>
@@ -244,27 +269,29 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* --- 5. About the Creators (Minimal) --- */}
+        {/* --- 5. About the Creators --- */}
         <div className="mb-24">
           <SectionHeading
             title="Who Built This?"
             icon={<Users className="w-5 h-5 text-purple-500" />}
           />
-          {/* Added Grid Layout for Creators */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CreatorCard
-              name="Sahil"
-              role="Developer"
-              desc="A developer who enjoys building things from scratch, experimenting in public, and learning as he goes. Focused on making open source more approachable and creating spaces where developers can build and grow together.
-"
+              name="Sahil Mishra"
+              role="Build Stuff & Break Stuff"
+              desc="Part of the team figuring things out together — building, experimenting, breaking things, and fixing them again. Here to learn in public and make open source feel less scary."
               icon={<Code className="w-6 h-6" />}
+              linkedin="https://www.linkedin.com/in/sahilmishra03/"
+              email="sahilmishra03032005@gmail.com"
             />
 
             <CreatorCard
-              name="Krish"
-              role="Developer"
-              desc="A developer who enjoys solving problems, refining ideas, and learning by building. Focused on improving projects through collaboration and contributing to open source in a practical way."
+              name="Krish Gupta"
+              role="Makes Things Work Somehow"
+              desc="Part of the team making sure things don't fall apart (most of the time). Enjoys collaborating, learning by doing, and building useful things with the community."
               icon={<Cpu className="w-6 h-6" />}
+              linkedin="https://www.linkedin.com/in/krishgupta5/"
+              email="krishgupta0072@gmail.com"
             />
           </div>
         </div>
@@ -289,7 +316,6 @@ export default function AboutPage() {
               Explore Projects <ArrowRight className="w-4 h-4" />
             </Link>
 
-            {/* 7. Philosophy */}
             <p className="text-xs font-mono text-zinc-600 uppercase tracking-widest">
               Build. Contribute. Collaborate.
             </p>
