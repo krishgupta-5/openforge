@@ -321,7 +321,8 @@ export default function ProjectsPage() {
 
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col items-center mb-12">
-          <div className="flex bg-neutral-900/50 backdrop-blur-sm p-1 rounded-lg border border-white/10">
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex bg-neutral-900/50 backdrop-blur-sm p-1 rounded-lg border border-white/10">
             {["All", "Open for Contribution", "Active", "Closed"].map((tab) => (
               <button
                 key={tab}
@@ -335,6 +336,28 @@ export default function ProjectsPage() {
                 {tab}{" "}
                 <span
                   className={`text-[10px] ml-1 ${activeTab === tab ? "opacity-100 font-bold" : "opacity-40"}`}
+                >
+                  ({counts[tab]})
+                </span>
+              </button>
+            ))}
+          </div>
+          
+          {/* Mobile Layout */}
+          <div className="sm:hidden flex flex-wrap justify-center bg-neutral-900/50 backdrop-blur-sm p-1 rounded-lg border border-white/10 w-full">
+            {["All", "Open for Contribution", "Active", "Closed"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-300 m-0.5 ${
+                  activeTab === tab
+                    ? "bg-white text-black shadow-sm"
+                    : "text-neutral-500 hover:text-white"
+                }`}
+              >
+                {tab === "Open for Contribution" ? "Open" : tab}
+                <span
+                  className={`text-[9px] ml-1 ${activeTab === tab ? "opacity-100 font-bold" : "opacity-40"}`}
                 >
                   ({counts[tab]})
                 </span>
