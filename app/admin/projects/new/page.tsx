@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
 import { isAdmin } from "@/lib/isAdmin";
@@ -113,12 +113,23 @@ export default function NewProject() {
   };
 
   const handleSubmit = async () => {
-    await addDoc(collection(db, "projects"), {
-      ...form,
-      technologies: form.technologies ? form.technologies.split(",").map((t: string) => t.trim()) : [],
-      createdAt: new Date(),
-    });
-    router.push("/admin/projects");
+    try {
+      // Create the project document first
+      const docRef = await addDoc(collection(db, "projects"), {
+        ...form,
+        technologies: form.technologies ? form.technologies.split(",").map((t: string) => t.trim()) : [],
+        createdAt: new Date(),
+      });
+
+      // Update the document to include its own ID
+      await updateDoc(docRef, {
+        id: docRef.id
+      });
+
+      router.push("/admin/projects");
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
   };
 
   return (
